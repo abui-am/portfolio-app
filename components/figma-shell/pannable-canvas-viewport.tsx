@@ -30,6 +30,9 @@ function clampScale(value: number) {
   return Math.min(MAX_SCALE, Math.max(MIN_SCALE, value));
 }
 
+const COPYABLE_TEXT_SELECTOR =
+  'p, h1, h2, h3, h4, h5, h6, li, pre, code, blockquote, figcaption, td, th, time, a, span:not([data-frame-dot]):not([aria-hidden])';
+
 function isInteractiveTarget(target: EventTarget | null) {
   if (!(target instanceof Element)) return false;
   return Boolean(
@@ -37,6 +40,12 @@ function isInteractiveTarget(target: EventTarget | null) {
       'a, button, input, textarea, select, label, summary, [role="button"], [role="link"], [data-canvas-interactive], [data-figma-frame-label]',
     ),
   );
+}
+
+function isCopyableTextTarget(target: EventTarget | null) {
+  if (!(target instanceof Element)) return false;
+  if (target.closest("button, [role='button']")) return false;
+  return Boolean(target.closest(COPYABLE_TEXT_SELECTOR));
 }
 
 function isTypingTarget(target: EventTarget | null) {
@@ -295,6 +304,7 @@ export function PannableCanvasViewport({ children, initialFrameId }: PannableCan
   const onPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     if (e.button === 2) return;
     if (isInteractiveTarget(e.target)) return;
+    if (isCopyableTextTarget(e.target)) return;
 
     const isMiddle = e.button === 1;
     const isPrimary = e.button === 0;
@@ -351,7 +361,7 @@ export function PannableCanvasViewport({ children, initialFrameId }: PannableCan
   return (
     <div
       ref={viewportRef}
-      className="relative flex min-h-0 flex-1 items-center justify-center touch-none overflow-hidden bg-[#f5f5f5] select-none"
+      className={`relative flex min-h-0 flex-1 items-center justify-center touch-none overflow-hidden bg-[#f5f5f5] ${isGrabbing ? "select-none" : ""}`}
       style={{ cursor }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
