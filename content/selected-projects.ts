@@ -7,12 +7,14 @@ export const bliProject: SelectedProject = {
   badges: [
     {
       label: "Selected Work #1",
+      icon: "selected-work",
       dotColor: "#7C4DFF",
       textColor: "#7C4DFF",
       backgroundColor: "rgba(97,85,245,0.1)",
     },
     {
       label: "Award Winning",
+      icon: "award-winning",
       dotColor: "#FF6900",
       textColor: "#FF6900",
       backgroundColor: "#FFEDD4",
@@ -29,6 +31,7 @@ export const bliProject: SelectedProject = {
       type: "link",
       text: "Build with AI: TRAE Friends@Bali Hackathon",
       href: "https://luma.com/n7bxe9m5",
+      bold: true,
     },
     { type: "text", text: "." },
   ],
@@ -59,6 +62,7 @@ export const kochaiProject: SelectedProject = {
   badges: [
     {
       label: "Selected Work #2",
+      icon: "selected-work",
       dotColor: "#7C4DFF",
       textColor: "#7C4DFF",
       backgroundColor: "rgba(97,85,245,0.1)",
@@ -98,6 +102,7 @@ export const gitgudProject: SelectedProject = {
   badges: [
     {
       label: "Selected Work #3",
+      icon: "selected-work",
       dotColor: "#7C4DFF",
       textColor: "#7C4DFF",
       backgroundColor: "rgba(97,85,245,0.1)",
@@ -119,10 +124,22 @@ export const gitgudProject: SelectedProject = {
   },
   screenshots: [
     {
-      src: "/content/gitgud/image_1.jpeg",
+      src: "/content/gitgud/image_1.png",
       width: 614,
-      height: 195,
-      alt: "GitGud terminal screenshot",
+      height: 356,
+      alt: "GitGud screenshot 1",
+    },
+    {
+      src: "/content/gitgud/image_2.png",
+      width: 614,
+      height: 342,
+      alt: "GitGud screenshot 2",
+    },
+    {
+      src: "/content/gitgud/image_3.png",
+      width: 614,
+      height: 356,
+      alt: "GitGud screenshot 3",
     },
   ],
 };

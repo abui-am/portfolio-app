@@ -26,6 +26,10 @@ function screenshotLayerName(src: string) {
   return src.split("/").pop() ?? src;
 }
 
+function needsCarouselLetterboxBg(screenshots: SelectedProjectScreenshot[], stripHeight: number) {
+  return screenshots.some((shot) => shot.height !== stripHeight);
+}
+
 export function ProjectScreenshotCarousel({
   screenshots,
   viewportWidth = 1440,
@@ -36,6 +40,7 @@ export function ProjectScreenshotCarousel({
   const [offset, setOffset] = useState(0);
   const layout = SELECTED_PROJECT_LAYOUT;
   const carouselStripHeight = getCarouselStripHeight(screenshots);
+  const letterboxBg = needsCarouselLetterboxBg(screenshots, carouselStripHeight);
 
   const handleNext = useCallback(() => {
     setOffset((prev) => {
@@ -56,7 +61,7 @@ export function ProjectScreenshotCarousel({
         name="Carousel"
         icon="group"
         data-frame-reveal="carousel"
-        className="pointer-events-none absolute inset-x-0 overflow-hidden"
+        className={`pointer-events-none absolute inset-x-0 overflow-hidden${letterboxBg ? " bg-black" : ""}`}
         style={{ top: layout.carouselTop, height: carouselStripHeight }}
         aria-roledescription="carousel"
         aria-label={ariaLabel}
@@ -70,7 +75,8 @@ export function ProjectScreenshotCarousel({
               key={shot.src}
               name={screenshotLayerName(shot.src)}
               icon="image"
-              className="shrink-0"
+              className={`flex shrink-0 items-center${letterboxBg ? " bg-black" : ""}`}
+              style={{ width: shot.width, height: carouselStripHeight }}
             >
               <Image
                 src={shot.src}

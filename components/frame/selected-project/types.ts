@@ -1,7 +1,10 @@
 import type { ReactNode } from "react";
 
+export type SelectedProjectBadgeIcon = "selected-work" | "award-winning";
+
 export interface SelectedProjectBadge {
   label: string;
+  icon?: SelectedProjectBadgeIcon;
   dotColor: string;
   textColor: string;
   backgroundColor: string;
@@ -17,12 +20,14 @@ export interface SelectedProjectScreenshot {
 export interface SelectedProjectTextPart {
   type: "text";
   text: string;
+  bold?: boolean;
 }
 
 export interface SelectedProjectLinkPart {
   type: "link";
   text: string;
   href: string;
+  bold?: boolean;
 }
 
 export type SelectedProjectDescriptionPart = SelectedProjectTextPart | SelectedProjectLinkPart;

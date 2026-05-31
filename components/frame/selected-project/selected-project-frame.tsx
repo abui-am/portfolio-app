@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { Lora, Manrope } from "next/font/google";
-import { Globe } from "lucide-react";
+import { Globe, Sparkles, Trophy } from "lucide-react";
 import type { SVGProps } from "react";
 import { ProjectScreenshotCarousel } from "@/components/frame/selected-project/project-screenshot-carousel";
 import { ProjectTechStack } from "@/components/frame/selected-project/project-tech-stack";
@@ -11,6 +11,7 @@ import {
   SELECTED_PROJECT_LAYOUT,
 } from "@/components/frame/selected-project/layout";
 import type {
+  SelectedProjectBadgeIcon,
   SelectedProjectDescriptionPart,
   SelectedProjectFrameProps,
 } from "@/components/frame/selected-project/types";
@@ -39,6 +40,16 @@ function logoLayerName(src: string) {
   return src.split("/").pop() ?? "logo";
 }
 
+function ProjectBadgeIcon({ icon, color }: { icon: SelectedProjectBadgeIcon; color: string }) {
+  const className = "size-4 shrink-0";
+
+  if (icon === "award-winning") {
+    return <Trophy data-frame-dot className={className} style={{ color }} aria-hidden />;
+  }
+
+  return <Sparkles data-frame-dot className={className} style={{ color }} aria-hidden />;
+}
+
 function truncateLabel(text: string, max = 24) {
   if (text.length <= max) return text;
   return `${text.slice(0, max - 1)}…`;
@@ -57,7 +68,11 @@ function ProjectDescription({
     <>
       {description.map((part, index) => {
         if (part.type === "text") {
-          return <span key={index}>{part.text}</span>;
+          return (
+            <span key={index} className={part.bold ? "font-bold text-black/80" : undefined}>
+              {part.text}
+            </span>
+          );
         }
 
         return (
@@ -66,7 +81,7 @@ function ProjectDescription({
             href={part.href}
             target="_blank"
             rel="noopener noreferrer"
-            className="underline decoration-black/30 underline-offset-2 transition-colors hover:text-black hover:decoration-black/60"
+            className={`underline decoration-black/30 underline-offset-2 transition-colors hover:text-black hover:decoration-black/60${part.bold ? " font-bold text-black/80" : ""}`}
           >
             {part.text}
           </a>
@@ -119,12 +134,16 @@ export function SelectedProjectFrame({
                     className="flex h-[38px] items-center justify-center gap-2.5 rounded-lg px-3 py-2"
                     style={{ backgroundColor: badge.backgroundColor }}
                   >
-                    <span
-                      data-frame-dot
-                      className="size-2 shrink-0 rounded-full"
-                      style={{ backgroundColor: badge.dotColor }}
-                      aria-hidden
-                    />
+                    {badge.icon ? (
+                      <ProjectBadgeIcon icon={badge.icon} color={badge.textColor} />
+                    ) : (
+                      <span
+                        data-frame-dot
+                        className="size-2 shrink-0 rounded-full"
+                        style={{ backgroundColor: badge.dotColor }}
+                        aria-hidden
+                      />
+                    )}
                     <span
                       className="text-base leading-[22px] font-bold"
                       style={{ color: badge.textColor }}

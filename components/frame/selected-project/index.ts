@@ -3,6 +3,7 @@ export { SelectedProjectFrame } from "@/components/frame/selected-project/select
 export type {
   SelectedProject,
   SelectedProjectBadge,
+  SelectedProjectBadgeIcon,
   SelectedProjectDescriptionPart,
   SelectedProjectFrameProps,
   SelectedProjectLinkPart,
