@@ -10,18 +10,34 @@ export function useFrameInView(threshold = 0.15) {
     const node = ref.current;
     if (!node) return;
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry?.isIntersecting) {
-          setInView(true);
-          observer.disconnect();
-        }
-      },
-      { threshold },
-    );
+    let observer: IntersectionObserver | null = null;
+    let cancelled = false;
 
-    observer.observe(node);
-    return () => observer.disconnect();
+    function startObserving() {
+      if (cancelled || observer) return;
+
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry?.isIntersecting) {
+            setInView(true);
+            observer?.disconnect();
+            observer = null;
+          }
+        },
+        { threshold },
+      );
+
+      observer.observe(node);
+    }
+
+    // Wait one frame so canvas scale/pan is settled before reveal animations run.
+    const raf = requestAnimationFrame(startObserving);
+
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(raf);
+      observer?.disconnect();
+    };
   }, [threshold]);
 
   return { ref, inView };

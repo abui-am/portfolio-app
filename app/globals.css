@@ -25,6 +25,11 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+  overscroll-behavior: none;
+}
+
+html {
+  overscroll-behavior: none;
 }
 
 @keyframes frame-fade-up {
@@ -101,6 +106,17 @@ body {
 @media (prefers-reduced-motion: no-preference) {
   .frame-animated [data-frame-reveal] {
     opacity: 0;
+    transform: translateY(20px);
+  }
+
+  .frame-animated [data-frame-reveal="media"],
+  .frame-animated [data-frame-reveal="logo"] {
+    transform: translateX(28px) scale(0.94);
+  }
+
+  .frame-animated [data-frame-reveal="terminal"],
+  .frame-animated [data-frame-reveal="carousel"] {
+    transform: translateY(36px);
   }
 
   .frame-animated.frame-in-view [data-frame-reveal] {

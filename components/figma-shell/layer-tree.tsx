@@ -19,7 +19,7 @@ interface LayerTreeRowProps {
 }
 
 function LayerTreeRow({ node, depth, frameActive, isFrameRoot, defaultExpanded = true }: LayerTreeRowProps) {
-  const { selectLayer, focusLayer } = useFigmaCanvas();
+  const { focusLayer } = useFigmaCanvas();
   const selectedLayerId = useSelectedLayerId();
   const hasChildren = node.children.length > 0;
   const [expanded, setExpanded] = useState(defaultExpanded);
@@ -35,10 +35,6 @@ function LayerTreeRow({ node, depth, frameActive, isFrameRoot, defaultExpanded =
   }
 
   function handleSelect() {
-    if (isFrameRoot) {
-      selectLayer(node.id);
-      return;
-    }
     focusLayer(node.id);
   }
 

@@ -368,7 +368,7 @@ function CanvasFrame({
   active?: boolean;
   children: React.ReactNode;
 }) {
-  const { selectLayer } = useFigmaCanvas();
+  const { focusLayer } = useFigmaCanvas();
   const selectedLayerId = useSelectedLayerId();
   const isSelected = selectedLayerId === id;
   const isHighlighted = isSelected || (active === true && selectedLayerId === null);
@@ -379,7 +379,7 @@ function CanvasFrame({
         <button
           type="button"
           data-figma-frame-label
-          onClick={() => selectLayer(id)}
+          onClick={() => focusLayer(id)}
           onPointerDown={(e) => e.stopPropagation()}
           className={`cursor-pointer text-[11px] leading-4 font-medium transition-colors ${
             isHighlighted ? "text-[#18a0fb]" : "text-[#7a7a7a] hover:text-[#18a0fb]"

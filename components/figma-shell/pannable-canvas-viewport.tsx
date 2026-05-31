@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
 import { useFigmaCanvas } from "@/components/figma-shell/figma-canvas-context";
 import { findLayerElement, getLayerBounds } from "@/components/figma-shell/layer-focus";
 
@@ -16,6 +16,11 @@ const WIDE_SCREEN_SCALE_DAMPING = 0.0;
 const PINCH_ZOOM_SENSITIVITY = 0.01;
 const ZOOM_STEP_PERCENT = 50;
 const DRAG_THRESHOLD_PX = 6;
+const FOCUS_PAN_DURATION_MS = 420;
+
+function easeOutCubic(t: number) {
+  return 1 - (1 - t) ** 3;
+}
 
 function touchDistance(touches: TouchList) {
   if (touches.length < 2) return 0;
@@ -166,10 +171,69 @@ export function PannableCanvasViewport({ children, initialFrameId }: PannableCan
   } | null>(null);
 
   const pinchRef = useRef<{ distance: number; scale: number } | null>(null);
+  const focusAnimRef = useRef(0);
+  const transformRafRef = useRef(0);
+  const scaleDirtyRef = useRef(false);
 
-  const [isGrabbing, setIsGrabbing] = useState(false);
+  const isGesturingRef = useRef(false);
+  const docTouchBlockAttachedRef = useRef(false);
+
   const viewportRef = useRef<HTMLDivElement>(null);
   const hasInitialFocusRef = useRef(false);
+  const useInstantPanRef = useRef(false);
+
+  const cancelFocusAnimation = useCallback(() => {
+    if (focusAnimRef.current) {
+      cancelAnimationFrame(focusAnimRef.current);
+      focusAnimRef.current = 0;
+    }
+  }, []);
+
+  const flushScaleNotify = useCallback(() => {
+    if (!scaleDirtyRef.current) return;
+    scaleDirtyRef.current = false;
+    notifyScaleChange();
+  }, [notifyScaleChange]);
+
+  const queueTransformApply = useCallback(
+    (options?: { notifyScale?: boolean }) => {
+      if (options?.notifyScale) scaleDirtyRef.current = true;
+      if (transformRafRef.current) return;
+      transformRafRef.current = requestAnimationFrame(() => {
+        transformRafRef.current = 0;
+        applyTransformRef.current();
+        flushScaleNotify();
+      });
+    },
+    [flushScaleNotify],
+  );
+
+  const setGrabState = useCallback((grabbing: boolean) => {
+    const el = viewportRef.current;
+    if (!el) return;
+    isGesturingRef.current = grabbing;
+    el.style.cursor = grabbing ? "grabbing" : "grab";
+    el.classList.toggle("touch-none", grabbing);
+    el.classList.toggle("select-none", grabbing);
+  }, []);
+
+  const blockDocumentTouchMove = useCallback((e: TouchEvent) => {
+    if (dragRef.current || pinchRef.current || pendingDragRef.current) {
+      e.preventDefault();
+    }
+  }, []);
+
+  const attachDocumentTouchBlock = useCallback(() => {
+    if (docTouchBlockAttachedRef.current) return;
+    docTouchBlockAttachedRef.current = true;
+    document.addEventListener("touchmove", blockDocumentTouchMove, { passive: false });
+  }, [blockDocumentTouchMove]);
+
+  const detachDocumentTouchBlock = useCallback(() => {
+    if (!docTouchBlockAttachedRef.current) return;
+    docTouchBlockAttachedRef.current = false;
+    document.removeEventListener("touchmove", blockDocumentTouchMove);
+  }, [blockDocumentTouchMove]);
 
   const setScaleAtViewportCenter = useCallback((targetScale: number) => {
     const oldScale = scaleRef.current;
@@ -196,27 +260,70 @@ export function PannableCanvasViewport({ children, initialFrameId }: PannableCan
     [setScaleAtViewportCenter],
   );
 
-  const focusOnLayer = useCallback((layerId: string) => {
-    const viewport = viewportRef.current;
-    const layer = layerRef.current;
-    if (!viewport || !layer) return;
+  const focusOnLayer = useCallback(
+    (layerId: string) => {
+      const viewport = viewportRef.current;
+      const layer = layerRef.current;
+      if (!viewport || !layer) return;
+      if (dragRef.current || pinchRef.current) return;
 
-    const target = findLayerElement(layer, layerId);
-    if (!target) return;
+      const target = findLayerElement(layer, layerId);
+      if (!target) return;
 
-    const bounds = getLayerBounds(target);
-    if (bounds.width === 0 && bounds.height === 0) return;
+      const bounds = getLayerBounds(target);
+      if (bounds.width === 0 && bounds.height === 0) return;
 
-    const viewportRect = viewport.getBoundingClientRect();
-    const targetCenterX = bounds.left + bounds.width / 2;
-    const targetCenterY = bounds.top + bounds.height / 2;
-    const viewportCenterX = viewportRect.left + viewportRect.width / 2;
-    const viewportCenterY = viewportRect.top + viewportRect.height / 2;
+      const viewportRect = viewport.getBoundingClientRect();
+      const targetCenterX = bounds.left + bounds.width / 2;
+      const targetCenterY = bounds.top + bounds.height / 2;
+      const viewportCenterX = viewportRect.left + viewportRect.width / 2;
+      const viewportCenterY = viewportRect.top + viewportRect.height / 2;
 
-    panRef.current = {
-      x: panRef.current.x + (viewportCenterX - targetCenterX),
-      y: panRef.current.y + (viewportCenterY - targetCenterY),
-    };
+      const targetPan = {
+        x: panRef.current.x + (viewportCenterX - targetCenterX),
+        y: panRef.current.y + (viewportCenterY - targetCenterY),
+      };
+
+      const prefersReducedMotion =
+        typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const instantPan = useInstantPanRef.current;
+      useInstantPanRef.current = false;
+
+      if (instantPan || prefersReducedMotion) {
+        cancelFocusAnimation();
+        isGesturingRef.current = false;
+        panRef.current = targetPan;
+        applyTransformRef.current();
+        return;
+      }
+
+      cancelFocusAnimation();
+      isGesturingRef.current = true;
+      const fromPan = { ...panRef.current };
+      const start = performance.now();
+
+      function step(now: number) {
+        const t = Math.min(1, (now - start) / FOCUS_PAN_DURATION_MS);
+        const eased = easeOutCubic(t);
+        panRef.current = {
+          x: fromPan.x + (targetPan.x - fromPan.x) * eased,
+          y: fromPan.y + (targetPan.y - fromPan.y) * eased,
+        };
+        applyTransformRef.current();
+        if (t < 1) {
+          focusAnimRef.current = requestAnimationFrame(step);
+        } else {
+          focusAnimRef.current = 0;
+          isGesturingRef.current = false;
+        }
+      }
+
+      focusAnimRef.current = requestAnimationFrame(step);
+    },
+    [cancelFocusAnimation],
+  );
+
+  useLayoutEffect(() => {
     applyTransformRef.current();
   }, []);
 
@@ -234,37 +341,18 @@ export function PannableCanvasViewport({ children, initialFrameId }: PannableCan
     return () => registerZoomApi(null);
   }, [zoomIn, zoomOut, registerZoomApi]);
 
-  useEffect(() => {
-    if (!initialFrameId || hasInitialFocusRef.current) return;
+  const runInitialFocus = useCallback(() => {
+    if (!initialFrameId || hasInitialFocusRef.current) return false;
 
-    const frameId = initialFrameId;
-    let cancelled = false;
-    let attempts = 0;
+    const layer = layerRef.current;
+    const target = layer ? findLayerElement(layer, initialFrameId) : null;
+    if (!target) return false;
 
-    function tryInitialFocus() {
-      if (cancelled || hasInitialFocusRef.current) return;
-
-      const layer = layerRef.current;
-      const target = layer ? findLayerElement(layer, frameId) : null;
-
-      if (!target && attempts < 20) {
-        attempts += 1;
-        requestAnimationFrame(tryInitialFocus);
-        return;
-      }
-
-      if (!target) return;
-
-      hasInitialFocusRef.current = true;
-      panToLayer(frameId);
-    }
-
-    requestAnimationFrame(tryInitialFocus);
-
-    return () => {
-      cancelled = true;
-    };
-  }, [initialFrameId, panToLayer]);
+    hasInitialFocusRef.current = true;
+    useInstantPanRef.current = true;
+    focusOnLayer(initialFrameId);
+    return true;
+  }, [focusOnLayer, initialFrameId]);
 
   const wheelAccumRef = useRef({ x: 0, y: 0 });
   const wheelRafRef = useRef(0);
@@ -305,21 +393,45 @@ export function PannableCanvasViewport({ children, initialFrameId }: PannableCan
       if (Math.abs(width - lastWidth) < 0.5) return;
       lastWidth = width;
       if (hasManualZoomRef.current) return;
+      if (dragRef.current || pinchRef.current || focusAnimRef.current || isGesturingRef.current) return;
 
-      scaleRef.current = scaleFromViewportWidth(width);
+      const oldScale = scaleRef.current;
+      const newScale = scaleFromViewportWidth(width);
+      if (newScale === oldScale) return;
+
+      const ratio = newScale / oldScale;
+      panRef.current = {
+        x: panRef.current.x * ratio,
+        y: panRef.current.y * ratio,
+      };
+      scaleRef.current = newScale;
       applyTransformRef.current();
       notifyScaleChange();
     }
 
     applyScaleFromWidth(el.getBoundingClientRect().width);
 
+    let focusRetryCancelled = false;
+    if (!runInitialFocus() && initialFrameId) {
+      let attempts = 0;
+      function retryInitialFocus() {
+        if (focusRetryCancelled || hasInitialFocusRef.current) return;
+        if (runInitialFocus()) return;
+        if (attempts++ < 20) requestAnimationFrame(retryInitialFocus);
+      }
+      requestAnimationFrame(retryInitialFocus);
+    }
+
     const ro = new ResizeObserver((entries) => {
       const w = entries[0]?.contentRect.width ?? el.getBoundingClientRect().width;
       applyScaleFromWidth(w);
     });
     ro.observe(el);
-    return () => ro.disconnect();
-  }, [notifyScaleChange]);
+    return () => {
+      focusRetryCancelled = true;
+      ro.disconnect();
+    };
+  }, [initialFrameId, notifyScaleChange, runInitialFocus]);
 
   useEffect(() => {
     const el = viewportRef.current;
@@ -384,8 +496,9 @@ export function PannableCanvasViewport({ children, initialFrameId }: PannableCan
   const endDrag = useCallback(() => {
     dragRef.current = null;
     pendingDragRef.current = null;
-    setIsGrabbing(false);
-  }, []);
+    setGrabState(false);
+    detachDocumentTouchBlock();
+  }, [detachDocumentTouchBlock, setGrabState]);
 
   const beginDrag = useCallback(
     (viewport: HTMLDivElement, pointerId: number, startX: number, startY: number, originX: number, originY: number) => {
@@ -394,11 +507,13 @@ export function PannableCanvasViewport({ children, initialFrameId }: PannableCan
       } catch {
         /* ignore */
       }
+      cancelFocusAnimation();
+      attachDocumentTouchBlock();
       dragRef.current = { pointerId, startX, startY, originX, originY };
       pendingDragRef.current = null;
-      setIsGrabbing(true);
+      setGrabState(true);
     },
-    [],
+    [attachDocumentTouchBlock, cancelFocusAnimation, setGrabState],
   );
 
   const cancelPendingDrag = useCallback((viewport: HTMLDivElement, pointerId: number) => {
@@ -420,35 +535,41 @@ export function PannableCanvasViewport({ children, initialFrameId }: PannableCan
     [],
   );
 
-  const onPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    if (e.button === 2) return;
-    if (isInteractiveTarget(e.target)) return;
-    if (isCopyableTextTarget(e.target)) return;
-    if (pinchRef.current) return;
+  const onPointerDown = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      if (e.button === 2) return;
+      if (isInteractiveTarget(e.target)) return;
+      if (isCopyableTextTarget(e.target)) return;
+      if (pinchRef.current) return;
 
-    const isMiddle = e.button === 1;
-    const isPrimary = e.button === 0;
-    if (!isPrimary && !isMiddle) return;
+      const isMiddle = e.button === 1;
+      const isPrimary = e.button === 0;
+      if (!isPrimary && !isMiddle) return;
 
-    const p = panRef.current;
-    pendingDragRef.current = {
-      pointerId: e.pointerId,
-      startX: e.clientX,
-      startY: e.clientY,
-      originX: p.x,
-      originY: p.y,
-      target: e.target,
-    };
+      cancelFocusAnimation();
 
-    if (e.pointerType === "touch") {
-      e.preventDefault();
-      try {
-        e.currentTarget.setPointerCapture(e.pointerId);
-      } catch {
-        /* ignore */
+      const p = panRef.current;
+      pendingDragRef.current = {
+        pointerId: e.pointerId,
+        startX: e.clientX,
+        startY: e.clientY,
+        originX: p.x,
+        originY: p.y,
+        target: e.target,
+      };
+
+      if (e.pointerType === "touch") {
+        e.preventDefault();
+        attachDocumentTouchBlock();
+        try {
+          e.currentTarget.setPointerCapture(e.pointerId);
+        } catch {
+          /* ignore */
+        }
       }
-    }
-  }, []);
+    },
+    [attachDocumentTouchBlock, cancelFocusAnimation],
+  );
 
   const onPointerMove = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
@@ -458,6 +579,7 @@ export function PannableCanvasViewport({ children, initialFrameId }: PannableCan
       if (pending && pending.pointerId === e.pointerId && !dragRef.current) {
         const dx = e.clientX - pending.startX;
         const dy = e.clientY - pending.startY;
+        if (e.pointerType === "touch") e.preventDefault();
         if (Math.hypot(dx, dy) < DRAG_THRESHOLD_PX) return;
 
         if (shouldDeferToScrollable(pending.target, viewport, dx, dy)) {
@@ -475,15 +597,16 @@ export function PannableCanvasViewport({ children, initialFrameId }: PannableCan
       const dx = e.clientX - d.startX;
       const dy = e.clientY - d.startY;
       panRef.current = { x: d.originX + dx, y: d.originY + dy };
-      applyTransformRef.current();
+      queueTransformApply();
     },
-    [beginDrag, cancelPendingDrag, shouldDeferToScrollable],
+    [beginDrag, cancelPendingDrag, queueTransformApply, shouldDeferToScrollable],
   );
 
   const onPointerUp = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
       if (pendingDragRef.current?.pointerId === e.pointerId) {
         cancelPendingDrag(e.currentTarget, e.pointerId);
+        detachDocumentTouchBlock();
       }
 
       const d = dragRef.current;
@@ -495,7 +618,7 @@ export function PannableCanvasViewport({ children, initialFrameId }: PannableCan
       }
       endDrag();
     },
-    [cancelPendingDrag, endDrag],
+    [cancelPendingDrag, detachDocumentTouchBlock, endDrag],
   );
 
   useEffect(() => {
@@ -505,6 +628,8 @@ export function PannableCanvasViewport({ children, initialFrameId }: PannableCan
     function onTouchStart(e: TouchEvent) {
       if (e.touches.length !== 2) return;
 
+      cancelFocusAnimation();
+      attachDocumentTouchBlock();
       pendingDragRef.current = null;
       endDrag();
       hasManualZoomRef.current = true;
@@ -536,13 +661,14 @@ export function PannableCanvasViewport({ children, initialFrameId }: PannableCan
         y: panRef.current.y * ratio + focusY * (1 - ratio),
       };
       scaleRef.current = newScale;
-      applyTransformRef.current();
-      notifyScaleChange();
+      queueTransformApply({ notifyScale: true });
     }
 
     function onTouchEnd(e: TouchEvent) {
       if (e.touches.length >= 2) return;
       pinchRef.current = null;
+      detachDocumentTouchBlock();
+      flushScaleNotify();
     }
 
     el.addEventListener("touchstart", onTouchStart, { passive: true });
@@ -556,24 +682,36 @@ export function PannableCanvasViewport({ children, initialFrameId }: PannableCan
       el.removeEventListener("touchend", onTouchEnd);
       el.removeEventListener("touchcancel", onTouchEnd);
     };
-  }, [endDrag, notifyScaleChange]);
+  }, [attachDocumentTouchBlock, cancelFocusAnimation, detachDocumentTouchBlock, endDrag, flushScaleNotify, queueTransformApply]);
 
   const onPointerCancel = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
+      if (pendingDragRef.current?.pointerId === e.pointerId) {
+        pendingDragRef.current = null;
+        detachDocumentTouchBlock();
+      }
+
       const d = dragRef.current;
       if (!d || e.pointerId !== d.pointerId) return;
       endDrag();
     },
-    [endDrag],
+    [detachDocumentTouchBlock, endDrag],
   );
 
-  const cursor = isGrabbing ? "grabbing" : "grab";
+  useEffect(
+    () => () => {
+      cancelFocusAnimation();
+      detachDocumentTouchBlock();
+      if (transformRafRef.current) cancelAnimationFrame(transformRafRef.current);
+    },
+    [cancelFocusAnimation, detachDocumentTouchBlock],
+  );
 
   return (
     <div
       ref={viewportRef}
-      className={`relative flex min-h-0 flex-1 items-center justify-center overflow-hidden bg-[#f5f5f5] ${isGrabbing ? "touch-none select-none" : ""}`}
-      style={{ cursor, touchAction: isGrabbing ? "none" : "manipulation" }}
+      className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden overscroll-none bg-[#f5f5f5]"
+      style={{ cursor: "grab", touchAction: "none" }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
@@ -585,10 +723,7 @@ export function PannableCanvasViewport({ children, initialFrameId }: PannableCan
       <div
         ref={layerRef}
         className="flex shrink-0 will-change-transform"
-        style={{
-          transform: "translate3d(0px, 0px, 0) scale(1)",
-          transformOrigin: "center center",
-        }}
+        style={{ transformOrigin: "center center" }}
       >
         {children}
       </div>
