@@ -7,14 +7,14 @@ export function useFrameInView(threshold = 0.15) {
   const [inView, setInView] = useState(false);
 
   useEffect(() => {
-    const node = ref.current;
-    if (!node) return;
-
     let observer: IntersectionObserver | null = null;
     let cancelled = false;
 
     function startObserving() {
       if (cancelled || observer) return;
+
+      const target = ref.current;
+      if (!target) return;
 
       observer = new IntersectionObserver(
         ([entry]) => {
@@ -27,7 +27,7 @@ export function useFrameInView(threshold = 0.15) {
         { threshold },
       );
 
-      observer.observe(node);
+      observer.observe(target);
     }
 
     // Wait one frame so canvas scale/pan is settled before reveal animations run.
