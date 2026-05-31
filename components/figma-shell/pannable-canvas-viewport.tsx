@@ -15,6 +15,23 @@ const REFERENCE_VIEWPORT_WIDTH_PX = 1440;
 const WIDE_SCREEN_SCALE_DAMPING = 0.0;
 const PINCH_ZOOM_SENSITIVITY = 0.01;
 const ZOOM_STEP_PERCENT = 50;
+const DRAG_THRESHOLD_PX = 6;
+
+function touchDistance(touches: TouchList) {
+  if (touches.length < 2) return 0;
+  const dx = touches[0].clientX - touches[1].clientX;
+  const dy = touches[0].clientY - touches[1].clientY;
+  return Math.hypot(dx, dy);
+}
+
+function touchFocusPoint(touches: TouchList, viewportRect: DOMRect) {
+  const x = (touches[0].clientX + touches[1].clientX) / 2;
+  const y = (touches[0].clientY + touches[1].clientY) / 2;
+  return {
+    focusX: x - viewportRect.left - viewportRect.width / 2,
+    focusY: y - viewportRect.top - viewportRect.height / 2,
+  };
+}
 
 function getNextZoomIn(scale: number) {
   const nextPercent = Math.floor((scale * 100) / ZOOM_STEP_PERCENT) * ZOOM_STEP_PERCENT + ZOOM_STEP_PERCENT;
@@ -30,9 +47,6 @@ function clampScale(value: number) {
   return Math.min(MAX_SCALE, Math.max(MIN_SCALE, value));
 }
 
-const COPYABLE_TEXT_SELECTOR =
-  'p, h1, h2, h3, h4, h5, h6, li, pre, code, blockquote, figcaption, td, th, time, a, span:not([data-frame-dot]):not([aria-hidden])';
-
 function isInteractiveTarget(target: EventTarget | null) {
   if (!(target instanceof Element)) return false;
   return Boolean(
@@ -40,12 +54,6 @@ function isInteractiveTarget(target: EventTarget | null) {
       'a, button, input, textarea, select, label, summary, [role="button"], [role="link"], [data-canvas-interactive], [data-figma-frame-label]',
     ),
   );
-}
-
-function isCopyableTextTarget(target: EventTarget | null) {
-  if (!(target instanceof Element)) return false;
-  if (target.closest("button, [role='button']")) return false;
-  return Boolean(target.closest(COPYABLE_TEXT_SELECTOR));
 }
 
 function isTypingTarget(target: EventTarget | null) {
@@ -138,6 +146,17 @@ export function PannableCanvasViewport({ children, initialFrameId }: PannableCan
     originX: number;
     originY: number;
   } | null>(null);
+
+  const pendingDragRef = useRef<{
+    pointerId: number;
+    startX: number;
+    startY: number;
+    originX: number;
+    originY: number;
+    target: EventTarget;
+  } | null>(null);
+
+  const pinchRef = useRef<{ distance: number; scale: number } | null>(null);
 
   const [isGrabbing, setIsGrabbing] = useState(false);
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -355,44 +374,101 @@ export function PannableCanvasViewport({ children, initialFrameId }: PannableCan
 
   const endDrag = useCallback(() => {
     dragRef.current = null;
+    pendingDragRef.current = null;
     setIsGrabbing(false);
   }, []);
+
+  const beginDrag = useCallback(
+    (pointerId: number, startX: number, startY: number, originX: number, originY: number) => {
+      dragRef.current = { pointerId, startX, startY, originX, originY };
+      pendingDragRef.current = null;
+      setIsGrabbing(true);
+    },
+    [],
+  );
+
+  const cancelPendingDrag = useCallback((viewport: HTMLDivElement, pointerId: number) => {
+    pendingDragRef.current = null;
+    try {
+      viewport.releasePointerCapture(pointerId);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const shouldDeferToScrollable = useCallback(
+    (target: EventTarget, boundary: HTMLElement, deltaX: number, deltaY: number) => {
+      const scrollable = getScrollableAncestor(target, boundary);
+      if (!scrollable) return false;
+      if (Math.abs(deltaY) <= Math.abs(deltaX)) return false;
+      return canScrollElement(scrollable, 0, deltaY);
+    },
+    [],
+  );
 
   const onPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     if (e.button === 2) return;
     if (isInteractiveTarget(e.target)) return;
-    if (isCopyableTextTarget(e.target)) return;
-    if (getScrollableAncestor(e.target, e.currentTarget)) return;
+    if (pinchRef.current) return;
 
     const isMiddle = e.button === 1;
     const isPrimary = e.button === 0;
     if (!isPrimary && !isMiddle) return;
 
     e.preventDefault();
-    e.currentTarget.setPointerCapture(e.pointerId);
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      /* ignore */
+    }
+
     const p = panRef.current;
-    dragRef.current = {
+    pendingDragRef.current = {
       pointerId: e.pointerId,
       startX: e.clientX,
       startY: e.clientY,
       originX: p.x,
       originY: p.y,
+      target: e.target,
     };
-    setIsGrabbing(true);
   }, []);
 
-  const onPointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    const d = dragRef.current;
-    if (!d || e.pointerId !== d.pointerId) return;
-    e.preventDefault();
-    const dx = e.clientX - d.startX;
-    const dy = e.clientY - d.startY;
-    panRef.current = { x: d.originX + dx, y: d.originY + dy };
-    applyTransformRef.current();
-  }, []);
+  const onPointerMove = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      const viewport = e.currentTarget;
+      const pending = pendingDragRef.current;
+
+      if (pending && pending.pointerId === e.pointerId && !dragRef.current) {
+        const dx = e.clientX - pending.startX;
+        const dy = e.clientY - pending.startY;
+        if (Math.hypot(dx, dy) < DRAG_THRESHOLD_PX) return;
+
+        if (shouldDeferToScrollable(pending.target, viewport, dx, dy)) {
+          cancelPendingDrag(viewport, pending.pointerId);
+          return;
+        }
+
+        e.preventDefault();
+        beginDrag(pending.pointerId, pending.startX, pending.startY, pending.originX, pending.originY);
+      }
+
+      const d = dragRef.current;
+      if (!d || e.pointerId !== d.pointerId) return;
+      e.preventDefault();
+      const dx = e.clientX - d.startX;
+      const dy = e.clientY - d.startY;
+      panRef.current = { x: d.originX + dx, y: d.originY + dy };
+      applyTransformRef.current();
+    },
+    [beginDrag, cancelPendingDrag, shouldDeferToScrollable],
+  );
 
   const onPointerUp = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
+      if (pendingDragRef.current?.pointerId === e.pointerId) {
+        cancelPendingDrag(e.currentTarget, e.pointerId);
+      }
+
       const d = dragRef.current;
       if (!d || e.pointerId !== d.pointerId) return;
       try {
@@ -402,8 +478,68 @@ export function PannableCanvasViewport({ children, initialFrameId }: PannableCan
       }
       endDrag();
     },
-    [endDrag],
+    [cancelPendingDrag, endDrag],
   );
+
+  useEffect(() => {
+    const el = viewportRef.current;
+    if (!el) return;
+
+    function onTouchStart(e: TouchEvent) {
+      if (e.touches.length !== 2) return;
+
+      pendingDragRef.current = null;
+      endDrag();
+      hasManualZoomRef.current = true;
+      pinchRef.current = {
+        distance: touchDistance(e.touches),
+        scale: scaleRef.current,
+      };
+    }
+
+    const viewport = el;
+
+    function onTouchMove(e: TouchEvent) {
+      if (!pinchRef.current || e.touches.length !== 2) return;
+
+      e.preventDefault();
+      const distance = touchDistance(e.touches);
+      if (distance <= 0) return;
+
+      const oldScale = scaleRef.current;
+      const newScale = clampScale(pinchRef.current.scale * (distance / pinchRef.current.distance));
+      if (newScale === oldScale) return;
+
+      const viewportRect = viewport.getBoundingClientRect();
+      const { focusX, focusY } = touchFocusPoint(e.touches, viewportRect);
+      const ratio = newScale / oldScale;
+
+      panRef.current = {
+        x: panRef.current.x * ratio + focusX * (1 - ratio),
+        y: panRef.current.y * ratio + focusY * (1 - ratio),
+      };
+      scaleRef.current = newScale;
+      applyTransformRef.current();
+      notifyScaleChange();
+    }
+
+    function onTouchEnd(e: TouchEvent) {
+      if (e.touches.length >= 2) return;
+      pinchRef.current = null;
+    }
+
+    el.addEventListener("touchstart", onTouchStart, { passive: true });
+    el.addEventListener("touchmove", onTouchMove, { passive: false });
+    el.addEventListener("touchend", onTouchEnd, { passive: true });
+    el.addEventListener("touchcancel", onTouchEnd, { passive: true });
+
+    return () => {
+      el.removeEventListener("touchstart", onTouchStart);
+      el.removeEventListener("touchmove", onTouchMove);
+      el.removeEventListener("touchend", onTouchEnd);
+      el.removeEventListener("touchcancel", onTouchEnd);
+    };
+  }, [endDrag, notifyScaleChange]);
 
   const onPointerCancel = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
@@ -419,8 +555,8 @@ export function PannableCanvasViewport({ children, initialFrameId }: PannableCan
   return (
     <div
       ref={viewportRef}
-      className={`relative flex min-h-0 flex-1 items-center justify-center overflow-hidden bg-[#f5f5f5] ${isGrabbing ? "touch-none select-none" : ""}`}
-      style={{ cursor }}
+      className={`relative flex min-h-0 flex-1 touch-none items-center justify-center overflow-hidden bg-[#f5f5f5] ${isGrabbing ? "select-none" : ""}`}
+      style={{ cursor, touchAction: "none" }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}

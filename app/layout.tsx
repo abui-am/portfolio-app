@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 
@@ -20,6 +20,12 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Portfolio — Figma",
   description: "Portfolio presented in a Figma-style editor shell.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

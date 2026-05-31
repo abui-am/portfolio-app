@@ -23,6 +23,7 @@ import { FigmaLeftPanelLayers } from "@/components/figma-shell/figma-left-panel-
 import { FigmaFrameRoot } from "@/components/figma-shell/figma-layer";
 import { FigmaLayersProvider } from "@/components/figma-shell/figma-layers-context";
 import { getCanvasFrames, PRIMARY_CANVAS_FRAME_ID } from "@/content/canvas-frames";
+import { useIsMobile } from "@/components/figma-shell/use-is-mobile";
 
 const TOP_BAR_PX = 40;
 
@@ -33,30 +34,40 @@ function FigmaMark({ className }: { className?: string }) {
 const border = "border-[#e6e6e6]";
 const figmaBlue = "#18a0fb";
 
-function ZoomControls({ compact = false }: { compact?: boolean }) {
+function ZoomControls({ compact = false, floating = false }: { compact?: boolean; floating?: boolean }) {
   const scale = useCanvasScale();
   const { zoomIn, zoomOut } = useFigmaCanvas();
   const zoomLabel = `${Math.round(scale * 100)}%`;
 
   if (compact) {
     return (
-      <div className="flex items-center gap-1 rounded-full border border-[#e6e6e6] bg-white/95 px-2 py-1 shadow-lg backdrop-blur-sm">
+      <div
+        className={
+          floating
+            ? "flex items-center gap-1 rounded-full border border-[#e6e6e6] bg-white/95 px-2 py-1 shadow-lg backdrop-blur-sm"
+            : "flex h-7 shrink-0 items-center gap-0.5 rounded border border-[#e6e6e6] bg-white px-0.5"
+        }
+      >
         <button
           type="button"
           onClick={zoomOut}
-          className="flex size-7 items-center justify-center rounded-full text-[#333] hover:bg-[#f5f5f5]"
+          className={`flex items-center justify-center rounded text-[#333] hover:bg-[#f5f5f5] ${floating ? "size-7 rounded-full" : "size-6"}`}
           aria-label="Zoom out"
         >
-          <Minus className="size-4" aria-hidden />
+          <Minus className="size-3.5" aria-hidden />
         </button>
-        <span className="min-w-[3rem] text-center text-[12px] tabular-nums text-[#333]">{zoomLabel}</span>
+        <span
+          className={`shrink-0 text-center tabular-nums text-[#333] ${floating ? "min-w-12 text-[12px]" : "min-w-9 text-[11px]"}`}
+        >
+          {zoomLabel}
+        </span>
         <button
           type="button"
           onClick={zoomIn}
-          className="flex size-7 items-center justify-center rounded-full text-[#333] hover:bg-[#f5f5f5]"
+          className={`flex items-center justify-center rounded text-[#333] hover:bg-[#f5f5f5] ${floating ? "size-7 rounded-full" : "size-6"}`}
           aria-label="Zoom in"
         >
-          <Plus className="size-4" aria-hidden />
+          <Plus className="size-3.5" aria-hidden />
         </button>
       </div>
     );
@@ -78,76 +89,91 @@ function TopBar({
   onTogglePresentation,
   isChromeHidden,
   onToggleChrome,
+  onToggleMobileLayers,
+  isMobileLayersOpen,
 }: {
   onTogglePresentation: () => void;
   isChromeHidden: boolean;
   onToggleChrome: () => void;
+  onToggleMobileLayers: () => void;
+  isMobileLayersOpen: boolean;
 }) {
   return (
     <header
-      className={`flex shrink-0 items-center gap-0.5 border-b ${border} bg-white px-1`}
+      className={`flex shrink-0 items-center gap-0.5 border-b ${border} bg-white px-1 min-w-0 overflow-hidden`}
       style={{ height: TOP_BAR_PX }}
     >
-      <button
-        type="button"
-        className="flex size-8 shrink-0 items-center justify-center rounded text-[#333] hover:bg-[#f5f5f5]"
-        aria-label="Home"
-      >
-        <Home className="size-[18px]" aria-hidden />
-      </button>
-      {isChromeHidden ? (
+      <div className="flex shrink-0 items-center">
         <button
           type="button"
-          onClick={onToggleChrome}
           className="flex size-8 shrink-0 items-center justify-center rounded text-[#333] hover:bg-[#f5f5f5]"
-          aria-label="Show UI"
-          title="Show UI (Ctrl+\)"
+          aria-label="Home"
         >
-          <PanelLeftOpen className="size-[18px]" strokeWidth={2} aria-hidden />
+          <Home className="size-[18px]" aria-hidden />
         </button>
-      ) : (
-        <>
+        {isChromeHidden ? (
           <button
             type="button"
-            className="flex size-8 shrink-0 items-center justify-center rounded text-[#b3b3b3] hover:bg-[#f5f5f5]"
-            aria-label="Back"
+            onClick={onToggleChrome}
+            className="flex size-8 shrink-0 items-center justify-center rounded text-[#333] hover:bg-[#f5f5f5]"
+            aria-label="Show UI"
+            title="Show UI (Ctrl+\)"
           >
-            <ChevronLeft className="size-[18px]" aria-hidden />
+            <PanelLeftOpen className="size-[18px]" strokeWidth={2} aria-hidden />
           </button>
-          <button
-            type="button"
-            className="flex size-8 shrink-0 items-center justify-center rounded text-[#b3b3b3] hover:bg-[#f5f5f5]"
-            aria-label="Forward"
-          >
-            <ChevronRight className="size-[18px]" aria-hidden />
-          </button>
-        </>
-      )}
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={onToggleMobileLayers}
+              className="flex size-8 shrink-0 items-center justify-center rounded text-[#333] hover:bg-[#f5f5f5] lg:hidden"
+              aria-label={isMobileLayersOpen ? "Close layers panel" : "Open layers panel"}
+              aria-expanded={isMobileLayersOpen}
+            >
+              <Layers2 className="size-[18px]" aria-hidden />
+            </button>
+            <button
+              type="button"
+              className="hidden size-8 shrink-0 items-center justify-center rounded text-[#b3b3b3] hover:bg-[#f5f5f5] lg:flex"
+              aria-label="Back"
+            >
+              <ChevronLeft className="size-[18px]" aria-hidden />
+            </button>
+            <button
+              type="button"
+              className="hidden size-8 shrink-0 items-center justify-center rounded text-[#b3b3b3] hover:bg-[#f5f5f5] lg:flex"
+              aria-label="Forward"
+            >
+              <ChevronRight className="size-[18px]" aria-hidden />
+            </button>
+          </>
+        )}
+      </div>
 
-      <div className="mx-0.5 flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto">
-        <div className="flex h-7 shrink-0 items-center gap-1.5 rounded-md bg-white pl-2 pr-1 shadow-[inset_0_0_0_1px_#e6e6e6]">
+      <div className="mx-0.5 flex min-w-0 flex-1 items-center overflow-hidden">
+        <div className="flex h-7 min-w-0 max-w-full items-center gap-1 rounded-md bg-white pl-2 pr-1 shadow-[inset_0_0_0_1px_#e6e6e6]">
           <FigmaMark className="size-3.5 shrink-0" />
-          <span className="max-w-[140px] truncate text-[13px] font-medium text-[#333]">Untitled</span>
-          <button type="button" className="rounded p-0.5 text-[#b3b3b3] hover:bg-[#f5f5f5]" aria-label="Close tab">
+          <span className="min-w-0 truncate text-[13px] font-medium text-[#333]">Untitled</span>
+          <button type="button" className="shrink-0 rounded p-0.5 text-[#b3b3b3] hover:bg-[#f5f5f5]" aria-label="Close tab">
             <X className="size-3.5" aria-hidden />
           </button>
         </div>
-        <div className="flex h-7 shrink-0 items-center gap-1.5 rounded-md px-2 text-[13px] text-[#b3b3b3] shadow-[inset_0_0_0_1px_#e6e6e6]">
+        <div className="hidden h-7 shrink-0 items-center gap-1.5 rounded-md px-2 text-[13px] text-[#b3b3b3] shadow-[inset_0_0_0_1px_#e6e6e6] md:flex">
           <FigmaMark className="size-3.5 shrink-0 opacity-60" />
           <span className="max-w-[120px] truncate">Untitled</span>
         </div>
         <button
           type="button"
-          className="flex size-7 shrink-0 items-center justify-center rounded text-[#7a7a7a] hover:bg-[#f5f5f5]"
+          className="hidden size-7 shrink-0 items-center justify-center rounded text-[#7a7a7a] hover:bg-[#f5f5f5] sm:flex"
           aria-label="New tab"
         >
           <Plus className="size-4" aria-hidden />
         </button>
       </div>
 
-      <div className="flex shrink-0 items-center gap-0.5 pr-1">
+      <div className="flex shrink-0 items-center gap-0.5 pr-0.5 sm:gap-1 sm:pr-1">
         <div
-          className="flex size-7 items-center justify-center rounded-full bg-linear-to-br from-[#ff8577] to-[#ff4d6d] text-[10px] font-bold text-white"
+          className="hidden size-7 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-[#ff8577] to-[#ff4d6d] text-[10px] font-bold text-white sm:flex"
           aria-hidden
         >
           A
@@ -155,19 +181,24 @@ function TopBar({
         <button
           type="button"
           onClick={onTogglePresentation}
-          className="flex size-8 items-center justify-center rounded text-[#333] hover:bg-[#f5f5f5]"
+          className="hidden size-8 shrink-0 items-center justify-center rounded text-[#333] hover:bg-[#f5f5f5] md:flex"
           aria-label="Enter presentation mode"
         >
           <Play className="size-[18px]" aria-hidden />
         </button>
         <button
           type="button"
-          className="h-7 shrink-0 rounded-md px-3 text-[12px] font-semibold text-white"
+          className="h-7 shrink-0 rounded-md px-2 text-[11px] font-semibold text-white sm:px-3 sm:text-[12px]"
           style={{ backgroundColor: figmaBlue }}
         >
           Share
         </button>
-        <ZoomControls />
+        <div className="hidden md:block">
+          <ZoomControls />
+        </div>
+        <div className="md:hidden">
+          <ZoomControls compact />
+        </div>
       </div>
     </header>
   );
@@ -198,9 +229,21 @@ function LayerRow({
   );
 }
 
-function LeftPanel({ onToggleChrome }: { onToggleChrome: () => void }) {
+function LeftPanel({
+  onToggleChrome,
+  onCloseMobile,
+  isMobileOverlay,
+}: {
+  onToggleChrome: () => void;
+  onCloseMobile?: () => void;
+  isMobileOverlay?: boolean;
+}) {
   return (
-    <aside className={`flex w-[240px] shrink-0 flex-col border-r ${border} bg-white`}>
+    <aside
+      className={`flex w-[240px] shrink-0 flex-col border-r ${border} bg-white ${
+        isMobileOverlay ? "h-full shadow-xl" : ""
+      }`}
+    >
       <div className={`flex items-center gap-2 border-b ${border} px-3 py-2`}>
         <FigmaMark className="size-[22px] shrink-0" />
         <div className="min-w-0 flex-1">
@@ -213,12 +256,22 @@ function LeftPanel({ onToggleChrome }: { onToggleChrome: () => void }) {
         <button
           type="button"
           onClick={onToggleChrome}
-          className="flex size-7 shrink-0 items-center justify-center rounded text-[#7a7a7a] hover:bg-[#f5f5f5] hover:text-[#333]"
+          className="hidden size-7 shrink-0 items-center justify-center rounded text-[#7a7a7a] hover:bg-[#f5f5f5] hover:text-[#333] lg:flex"
           aria-label="Hide UI"
           title="Hide UI (Ctrl+\)"
         >
           <PanelLeftClose className="size-4" strokeWidth={2} aria-hidden />
         </button>
+        {isMobileOverlay ? (
+          <button
+            type="button"
+            onClick={onCloseMobile}
+            className="flex size-7 shrink-0 items-center justify-center rounded text-[#7a7a7a] hover:bg-[#f5f5f5] hover:text-[#333] lg:hidden"
+            aria-label="Close layers panel"
+          >
+            <X className="size-4" aria-hidden />
+          </button>
+        ) : null}
       </div>
       <div className={`flex items-center justify-between border-b ${border} px-3 py-2`}>
         <div className="flex gap-4 text-[12px] font-medium">
@@ -376,8 +429,8 @@ function PresentationOverlay({
   onHideToolbar: () => void;
 }) {
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-6 z-50 flex justify-center">
-      <div className="pointer-events-auto flex items-center gap-3 rounded-full border border-[#e6e6e6] bg-white/95 px-4 py-2 shadow-lg backdrop-blur-sm">
+    <div className="pointer-events-none absolute inset-x-0 bottom-4 z-50 flex justify-center px-3 pb-[env(safe-area-inset-bottom)] sm:bottom-6 sm:px-0">
+      <div className="pointer-events-auto flex max-w-full flex-wrap items-center justify-center gap-2 rounded-full border border-[#e6e6e6] bg-white/95 px-3 py-2 shadow-lg backdrop-blur-sm sm:gap-3 sm:px-4">
         <button
           type="button"
           onClick={onExit}
@@ -393,7 +446,7 @@ function PresentationOverlay({
         >
           Hide toolbar
         </button>
-        <ZoomControls compact />
+        <ZoomControls compact floating />
       </div>
     </div>
   );
@@ -426,12 +479,34 @@ function PresentationToolbarReveal({
 }
 
 function FigmaAppShell() {
+  const isMobile = useIsMobile();
   const [isPresentationMode, setIsPresentationMode] = useState(false);
   const [isChromeHidden, setIsChromeHidden] = useState(false);
   const [isPresentationToolbarHidden, setIsPresentationToolbarHidden] = useState(false);
+  const [isMobileLayersOpen, setIsMobileLayersOpen] = useState(false);
+
+  useEffect(() => {
+    if (isMobile) {
+      setIsChromeHidden(true);
+      setIsMobileLayersOpen(false);
+    }
+  }, [isMobile]);
 
   const toggleChrome = useCallback(() => {
     setIsChromeHidden((prev) => !prev);
+    setIsMobileLayersOpen(false);
+  }, []);
+
+  const toggleMobileLayers = useCallback(() => {
+    setIsMobileLayersOpen((prev) => {
+      const next = !prev;
+      if (next) setIsChromeHidden(false);
+      return next;
+    });
+  }, []);
+
+  const closeMobileLayers = useCallback(() => {
+    setIsMobileLayersOpen(false);
   }, []);
 
   const exitPresentation = useCallback(async () => {
@@ -502,18 +577,48 @@ function FigmaAppShell() {
   }, [exitPresentation, isPresentationMode]);
 
   const arePanelsHidden = isChromeHidden || isPresentationMode;
+  const showDesktopLeftPanel = !arePanelsHidden;
+  const showMobileLayersDrawer = isMobile && isMobileLayersOpen && !isPresentationMode;
 
   return (
-    <div className={`flex h-screen min-h-0 flex-col bg-white text-[#333] ${arePanelsHidden && isPresentationMode ? "" : "min-w-[1024px]"}`}>
+    <div
+      className={`flex h-[100dvh] min-h-0 flex-col bg-white text-[#333] ${arePanelsHidden && isPresentationMode ? "" : "lg:min-w-[1024px]"}`}
+    >
       {!isPresentationMode ? (
         <TopBar
           onTogglePresentation={togglePresentation}
           isChromeHidden={isChromeHidden}
           onToggleChrome={toggleChrome}
+          onToggleMobileLayers={toggleMobileLayers}
+          isMobileLayersOpen={isMobileLayersOpen}
         />
       ) : null}
       <div className="relative flex min-h-0 flex-1">
-        {!arePanelsHidden ? <LeftPanel onToggleChrome={toggleChrome} /> : null}
+        {showMobileLayersDrawer ? (
+          <button
+            type="button"
+            className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+            aria-label="Close layers panel"
+            onClick={closeMobileLayers}
+          />
+        ) : null}
+        {showDesktopLeftPanel ? (
+          <div
+            className={`${
+              isMobile
+                ? `fixed inset-y-0 left-0 z-50 transition-transform duration-200 ease-out ${
+                    isMobileLayersOpen ? "translate-x-0" : "-translate-x-full pointer-events-none"
+                  }`
+                : ""
+            } lg:pointer-events-auto lg:static lg:translate-x-0`}
+          >
+            <LeftPanel
+              onToggleChrome={toggleChrome}
+              onCloseMobile={closeMobileLayers}
+              isMobileOverlay={isMobile}
+            />
+          </div>
+        ) : null}
         <main className="relative flex min-h-0 min-w-0 flex-1 flex-col bg-[#f5f5f5]">
           <DummyCanvasFrame />
           {isPresentationMode && !isPresentationToolbarHidden ? (
@@ -529,7 +634,7 @@ function FigmaAppShell() {
             />
           ) : null}
         </main>
-        {!arePanelsHidden ? <RightPanel /> : null}
+        {!arePanelsHidden ? <div className="hidden lg:contents"><RightPanel /></div> : null}
       </div>
     </div>
   );

@@ -52,7 +52,8 @@ export function PortfolioTerminal() {
         <div
           ref={scrollRef}
           data-canvas-scroll
-          className="h-full min-h-0 touch-auto overflow-x-hidden overflow-y-auto px-4 py-2 [overflow-anchor:none]"
+          className="h-full min-h-0 touch-pan-y overflow-x-hidden overflow-y-auto px-4 py-2 [overflow-anchor:none]"
+          onPointerDown={(e) => e.stopPropagation()}
         >
           <pre
             ref={preRef}

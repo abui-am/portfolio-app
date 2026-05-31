@@ -184,7 +184,7 @@ export default function Portfolio() {
           <PortfolioTerminal />
         </FigmaLayer>
 
-        <FigmaLayer name="Footer" icon="group" className="flex flex-col gap-4 sm:flex-row sm:items-stretch">
+        <FigmaLayer name="Footer" icon="group" className="flex flex-row items-stretch gap-4">
           <FigmaLayer name="Tech stack" icon="group" data-frame-reveal="tech-grid" className="flex shrink-0 flex-col gap-2">
             <div className="flex flex-row gap-4">
               <TechIconTile src="/react.svg" label="React" />
@@ -202,11 +202,11 @@ export default function Portfolio() {
             name="Employers"
             icon="rectangle"
             data-frame-reveal="employers"
-            className="flex min-h-[116px] min-w-0 flex-1 flex-col justify-center rounded-2xl bg-[linear-gradient(142deg,#000000_0%,#2c2b2b_100%)] px-4 py-4 sm:px-4"
+            className="flex min-h-[116px] min-w-0 flex-1 flex-col justify-center rounded-2xl bg-[linear-gradient(142deg,#000000_0%,#2c2b2b_100%)] px-4 py-4"
           >
             <div className="flex flex-col gap-2.5">
               <p className="text-lg leading-tight text-white">Previously worked at:</p>
-              <div className="flex gap-4 ">
+              <div className="flex gap-4">
                 <EmployerLogo href="https://evermos.com/home/" src="/evermos.svg" label="Evermos" height={48} width={48} />
                 <EmployerLogo
                   href="https://dealls.com/"
