@@ -53,6 +53,59 @@ function isTypingTarget(target: EventTarget | null) {
   return target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable;
 }
 
+function getScrollableAncestor(target: EventTarget | null, boundary: HTMLElement) {
+  if (!(target instanceof Element)) return null;
+
+  let node: Element | null = target;
+  while (node && node !== boundary) {
+    if (!(node instanceof HTMLElement)) {
+      node = node.parentElement;
+      continue;
+    }
+
+    if (node.dataset.canvasScroll !== undefined || node.dataset.canvasInteractive !== undefined) {
+      return node;
+    }
+
+    const style = getComputedStyle(node);
+    const canScrollY =
+      (style.overflowY === "auto" || style.overflowY === "scroll") && node.scrollHeight > node.clientHeight + 1;
+    const canScrollX =
+      (style.overflowX === "auto" || style.overflowX === "scroll") && node.scrollWidth > node.clientWidth + 1;
+
+    if (canScrollY || canScrollX) return node;
+    node = node.parentElement;
+  }
+
+  return null;
+}
+
+function canScrollElement(element: HTMLElement, deltaX: number, deltaY: number) {
+  const style = getComputedStyle(element);
+  const canScrollY =
+    (style.overflowY === "auto" || style.overflowY === "scroll") && element.scrollHeight > element.clientHeight + 1;
+  const canScrollX =
+    (style.overflowX === "auto" || style.overflowX === "scroll") && element.scrollWidth > element.clientWidth + 1;
+
+  if (canScrollY && deltaY !== 0) {
+    if (deltaY > 0 && element.scrollTop + element.clientHeight < element.scrollHeight - 1) return true;
+    if (deltaY < 0 && element.scrollTop > 0) return true;
+  }
+
+  if (canScrollX && deltaX !== 0) {
+    if (deltaX > 0 && element.scrollLeft + element.clientWidth < element.scrollWidth - 1) return true;
+    if (deltaX < 0 && element.scrollLeft > 0) return true;
+  }
+
+  return false;
+}
+
+function shouldUseNativeScroll(target: EventTarget | null, boundary: HTMLElement, deltaX: number, deltaY: number) {
+  const scrollable = getScrollableAncestor(target, boundary);
+  if (!scrollable) return false;
+  return canScrollElement(scrollable, deltaX, deltaY);
+}
+
 function scaleFromViewportWidth(widthPx: number) {
   if (widthPx <= 0) return clampScale(1);
   const linear = widthPx / REFERENCE_VIEWPORT_WIDTH_PX;
@@ -257,10 +310,10 @@ export function PannableCanvasViewport({ children, initialFrameId }: PannableCan
     }
 
     function onWheel(e: WheelEvent) {
-      e.preventDefault();
       if (!el) return;
 
       if (e.ctrlKey) {
+        e.preventDefault();
         hasManualZoomRef.current = true;
         const factor = Math.exp(-e.deltaY * PINCH_ZOOM_SENSITIVITY);
         const oldScale = scaleRef.current;
@@ -281,6 +334,10 @@ export function PannableCanvasViewport({ children, initialFrameId }: PannableCan
         notifyScaleChange();
         return;
       }
+
+      if (shouldUseNativeScroll(e.target, el, e.deltaX, e.deltaY)) return;
+
+      e.preventDefault();
 
       wheelAccumRef.current.x += e.deltaX;
       wheelAccumRef.current.y += e.deltaY;
@@ -305,6 +362,7 @@ export function PannableCanvasViewport({ children, initialFrameId }: PannableCan
     if (e.button === 2) return;
     if (isInteractiveTarget(e.target)) return;
     if (isCopyableTextTarget(e.target)) return;
+    if (getScrollableAncestor(e.target, e.currentTarget)) return;
 
     const isMiddle = e.button === 1;
     const isPrimary = e.button === 0;
@@ -361,7 +419,7 @@ export function PannableCanvasViewport({ children, initialFrameId }: PannableCan
   return (
     <div
       ref={viewportRef}
-      className={`relative flex min-h-0 flex-1 items-center justify-center touch-none overflow-hidden bg-[#f5f5f5] ${isGrabbing ? "select-none" : ""}`}
+      className={`relative flex min-h-0 flex-1 items-center justify-center overflow-hidden bg-[#f5f5f5] ${isGrabbing ? "touch-none select-none" : ""}`}
       style={{ cursor }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}

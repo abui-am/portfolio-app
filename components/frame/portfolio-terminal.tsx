@@ -48,12 +48,12 @@ export function PortfolioTerminal() {
         <span className="size-3 rounded-full bg-[#ffc600]" aria-hidden />
         <span className="size-3 rounded-full bg-[#00cb48]" aria-hidden />
       </FigmaLayer>
-      <FigmaLayer
-        name="pnpm install abui"
-        icon="text"
-        className="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto px-4 py-2 [overflow-anchor:none]"
-      >
-        <div ref={scrollRef}>
+      <FigmaLayer name="pnpm install abui" icon="text" className="min-h-0 min-w-0 flex-1">
+        <div
+          ref={scrollRef}
+          data-canvas-scroll
+          className="h-full min-h-0 touch-auto overflow-x-hidden overflow-y-auto px-4 py-2 [overflow-anchor:none]"
+        >
           <pre
             ref={preRef}
             className="min-w-0 max-w-full overflow-hidden whitespace-pre-wrap break-words font-mono text-[11px] leading-[1.45] text-white/85"
