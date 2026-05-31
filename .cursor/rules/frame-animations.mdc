@@ -1,0 +1,65 @@
+---
+description: Canvas frame entrance animations — apply automatically to every new frame
+alwaysApply: true
+---
+
+# Canvas frame animations
+
+Every Figma canvas frame in `components/frame/` must include scroll-triggered entrance animations. Do not wait for the user to ask.
+
+## Required pattern
+
+1. Mark the frame root as a client component when needed (`"use client"`).
+2. Use `useFrameInView` from `@/components/frame/use-frame-in-view`.
+3. Apply classes: `frame-animated` and `frame-in-view` when visible.
+4. Tag animatable blocks with `data-frame-reveal` using semantic names.
+
+```tsx
+"use client";
+
+import { useFrameInView } from "@/components/frame/use-frame-in-view";
+
+export default function MyFrame() {
+  const { ref, inView } = useFrameInView(0.15);
+
+  return (
+    <section
+      ref={ref}
+      className={`frame-animated ${inView ? "frame-in-view" : ""} ...`}
+    >
+      <div data-frame-reveal="badge">...</div>
+      <h2 data-frame-reveal="title">...</h2>
+      <p data-frame-reveal="description">...</p>
+      <div data-frame-reveal="actions">...</div>
+      <div data-frame-reveal="media">...</div>
+    </section>
+  );
+}
+```
+
+## Reveal tokens (defined in `app/globals.css`)
+
+| Token | Use for |
+|-------|---------|
+| `badge` | Status / award pills |
+| `title` | Main heading |
+| `description` | Body copy |
+| `tech` | Tech stack line |
+| `actions` | Buttons / CTAs |
+| `media` | Photos, screenshots (slides in from right) |
+| `terminal` | Terminal or secondary panel |
+| `tech-grid` | Icon grids |
+| `employers` | Logo / employer rows |
+| `logo` | Project logo (right column) |
+| `carousel` | Image carousel strip |
+| `arrow` | Carousel nav control |
+
+Optional: `data-frame-dot` on status dots, `.frame-float` on logos after entrance.
+
+## Rules
+
+- CSS-only animations in `globals.css` — no animation libraries unless explicitly requested.
+- Respect `prefers-reduced-motion` (already handled globally).
+- Interactive elements (`a`, `button`) must remain clickable inside the pannable canvas.
+- Add hover/active micro-interactions on buttons (`hover:scale-[1.03]`, `active:scale-[0.98]`).
+- Stagger top-to-bottom, left column before right column.
