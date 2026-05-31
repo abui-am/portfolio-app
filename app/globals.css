@@ -178,3 +178,91 @@ body {
     animation: frame-arrow-nudge 1.8s ease-in-out 1.2s infinite;
   }
 }
+
+@keyframes profile-flip-squish {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  45% {
+    transform: scale(0.9);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .profile-flip-trigger {
+    cursor: pointer;
+    border: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .profile-flip-trigger--animating .profile-flip-scene {
+    animation: profile-flip-squish 0.62s cubic-bezier(0.34, 1.15, 0.64, 1);
+  }
+
+  .profile-flip-scene {
+    perspective: 900px;
+    transition: transform 0.4s var(--frame-ease);
+  }
+
+  .profile-flip-scene--tracking {
+    transition: transform 0.12s linear;
+  }
+
+  .profile-flip-inner {
+    position: relative;
+    transform-style: preserve-3d;
+    transform: rotateY(0deg);
+    transition: transform 0.62s cubic-bezier(0.34, 1.15, 0.64, 1);
+  }
+
+  .profile-flip-inner--flipped {
+    transform: rotateY(180deg);
+  }
+
+  .profile-flip-face {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    border-radius: 1rem;
+    backface-visibility: hidden;
+  }
+
+  .profile-flip-face--back {
+    transform: rotateY(180deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .profile-flip-trigger {
+    cursor: pointer;
+    border: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .profile-flip-inner {
+    position: relative;
+  }
+
+  .profile-flip-face {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    border-radius: 1rem;
+  }
+
+  .profile-flip-face--back {
+    display: none;
+  }
+
+  .profile-flip-inner--flipped .profile-flip-face--front {
+    display: none;
+  }
+
+  .profile-flip-inner--flipped .profile-flip-face--back {
+    display: block;
+  }
+}

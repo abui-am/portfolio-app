@@ -2,7 +2,10 @@
 
 import Image from "next/image";
 import { Lora, Manrope } from "next/font/google";
-import type { SVGProps } from "react";
+import type { MouseEvent, SVGProps, TransitionEvent } from "react";
+import { useState } from "react";
+
+const PROFILE_TILT_MAX_DEG = 14;
 import { PortfolioTerminal } from "@/components/frame/portfolio-terminal";
 import { useFrameInView } from "@/components/frame/use-frame-in-view";
 import { FigmaLayer } from "@/components/figma-shell/figma-layer";
@@ -78,6 +81,93 @@ function EmployerLogo(props: EmployerLogoProps) {
         unoptimized
       />
     </a>
+  );
+}
+
+function ProfilePhotoFlip() {
+  const [isFlipped, setIsFlipped] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
+
+  function handleClick() {
+    setIsAnimating(true);
+    setIsFlipped((flipped) => !flipped);
+  }
+
+  function handleTransitionEnd(event: TransitionEvent<HTMLDivElement>) {
+    if (event.propertyName !== "transform") return;
+    setIsAnimating(false);
+  }
+
+  function handleMouseMove(event: MouseEvent<HTMLButtonElement>) {
+    if (isAnimating) return;
+
+    const rect = event.currentTarget.getBoundingClientRect();
+    const offsetX = (event.clientX - rect.left) / rect.width - 0.5;
+    const offsetY = (event.clientY - rect.top) / rect.height - 0.5;
+
+    setTilt({
+      x: -offsetY * PROFILE_TILT_MAX_DEG,
+      y: offsetX * PROFILE_TILT_MAX_DEG,
+    });
+  }
+
+  function handleMouseEnter() {
+    setIsHovering(true);
+  }
+
+  function handleMouseLeave() {
+    setIsHovering(false);
+    setTilt({ x: 0, y: 0 });
+  }
+
+  const sceneTransform =
+    isAnimating || !isHovering
+      ? undefined
+      : `rotateX(${tilt.x.toFixed(2)}deg) rotateY(${tilt.y.toFixed(2)}deg) scale(1.02)`;
+
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onMouseMove={handleMouseMove}
+      aria-pressed={isFlipped}
+      aria-label={isFlipped ? "Show profile photo" : "Show sketched portrait"}
+      className={`profile-flip-trigger size-full rounded-2xl bg-neutral-200${isAnimating ? " profile-flip-trigger--animating" : ""}`}
+    >
+      <div
+        className={`profile-flip-scene size-full${isHovering && !isAnimating ? " profile-flip-scene--tracking" : ""}`}
+        style={sceneTransform ? { transform: sceneTransform } : undefined}
+      >
+        <div
+          className={`profile-flip-inner size-full${isFlipped ? " profile-flip-inner--flipped" : ""}`}
+          onTransitionEnd={handleTransitionEnd}
+        >
+          <div className="profile-flip-face profile-flip-face--front">
+            <Image
+              src="/profile.png"
+              alt="Abuidillah Adjie Muliadi"
+              width={266}
+              height={266}
+              className="size-full object-cover"
+              priority
+            />
+          </div>
+          <div className="profile-flip-face profile-flip-face--back">
+            <Image
+              src="/abui-sketched.png"
+              alt="Abuidillah Adjie Muliadi sketched portrait"
+              width={266}
+              height={266}
+              className="size-full object-cover"
+            />
+          </div>
+        </div>
+      </div>
+    </button>
   );
 }
 
@@ -169,16 +259,9 @@ export default function Portfolio() {
             name="profile.png"
             icon="image"
             data-frame-reveal="media"
-            className="relative size-[266px] shrink-0 overflow-hidden rounded-2xl bg-neutral-200"
+            className="relative size-[266px] shrink-0 rounded-2xl"
           >
-            <Image
-              src="/profile.png"
-              alt="Abuidillah Adjie Muliadi"
-              width={266}
-              height={266}
-              className="size-full object-cover"
-              priority
-            />
+            <ProfilePhotoFlip />
           </FigmaLayer>
 
           <PortfolioTerminal />
