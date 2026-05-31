@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState, type ReactNode, type SVGProps } from "react";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { PannableCanvasViewport } from "@/components/figma-shell/pannable-canvas-viewport";
-import { FigmaCanvasProvider, useCanvasScale, useFigmaCanvas } from "@/components/figma-shell/figma-canvas-context";
+import { FigmaCanvasProvider, useCanvasScale, useFigmaCanvas, useSelectedLayerId } from "@/components/figma-shell/figma-canvas-context";
 import { FigmaLeftPanelLayers } from "@/components/figma-shell/figma-left-panel-layers";
 import { FigmaFrameRoot } from "@/components/figma-shell/figma-layer";
 import { FigmaLayersProvider } from "@/components/figma-shell/figma-layers-context";
@@ -406,6 +406,8 @@ function RightPanel() {
   );
 }
 
+const FRAME_LABEL_HEIGHT_PX = 20;
+
 function CanvasFrame({
   id,
   label,
@@ -417,13 +419,37 @@ function CanvasFrame({
   active?: boolean;
   children: React.ReactNode;
 }) {
+  const { selectLayer } = useFigmaCanvas();
+  const selectedLayerId = useSelectedLayerId();
+  const isSelected = selectedLayerId === id;
+  const isHighlighted = isSelected || (active === true && selectedLayerId === null);
+
   return (
-    <div className="relative shrink-0 w-[1440px]" data-figma-frame-id={id}>
-      <div className="absolute -top-5 left-0 text-[11px] font-medium text-[#18a0fb]">{label}</div>
-      <div className="relative overflow-hidden rounded-sm border border-[#c7c7c7] bg-white shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
-        <div className="pointer-events-none absolute inset-0 z-10 rounded-sm ring-1 ring-[#18a0fb]/45" aria-hidden />
-        <FigmaFrameRoot frameId={id} label={label} active={active}>
-          <div className="relative z-0 [&_a]:cursor-pointer [&_button]:cursor-pointer">{children}</div>
+    <div className="relative w-[1440px] shrink-0" data-figma-frame-id={id}>
+      <div className="flex shrink-0 items-end" style={{ height: FRAME_LABEL_HEIGHT_PX }}>
+        <button
+          type="button"
+          data-figma-frame-label
+          onClick={() => selectLayer(id)}
+          onPointerDown={(e) => e.stopPropagation()}
+          className={`cursor-pointer text-[11px] leading-4 font-medium transition-colors ${
+            isHighlighted ? "text-[#18a0fb]" : "text-[#7a7a7a] hover:text-[#18a0fb]"
+          }`}
+        >
+          {label}
+        </button>
+      </div>
+      <div
+        className={`relative overflow-hidden rounded-sm border-2 bg-white shadow-[0_1px_4px_rgba(0,0,0,0.08)] ${
+          isHighlighted
+            ? "border-[#18a0fb] shadow-[0_0_0_1px_#18a0fb,inset_0_0_0_1px_rgba(24,160,251,0.3)]"
+            : "border-[#c7c7c7]"
+        }`}
+      >
+        <FigmaFrameRoot frameId={id} label={label} active={isHighlighted}>
+          <div className="relative z-0 [&_a]:relative [&_a]:z-20 [&_a]:cursor-pointer [&_button]:relative [&_button]:z-20 [&_button]:cursor-pointer">
+            {children}
+          </div>
         </FigmaFrameRoot>
       </div>
     </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { Lock } from "lucide-react";
 import { useState, type MouseEvent } from "react";
 import { useFigmaCanvas, useSelectedLayerId } from "@/components/figma-shell/figma-canvas-context";
 import { ChevronIcon, FigmaLayerIconGlyph } from "@/components/figma-shell/figma-layer-icons";
@@ -13,67 +14,80 @@ interface LayerTreeRowProps {
   node: LayerTreeNode;
   depth: number;
   frameActive?: boolean;
+  isFrameRoot?: boolean;
   defaultExpanded?: boolean;
 }
 
-function LayerTreeRow({ node, depth, frameActive, defaultExpanded = true }: LayerTreeRowProps) {
-  const { focusLayer } = useFigmaCanvas();
+function LayerTreeRow({ node, depth, frameActive, isFrameRoot, defaultExpanded = true }: LayerTreeRowProps) {
+  const { selectLayer, focusLayer } = useFigmaCanvas();
   const selectedLayerId = useSelectedLayerId();
   const hasChildren = node.children.length > 0;
   const [expanded, setExpanded] = useState(defaultExpanded);
   const paddingLeft = 4 + depth * INDENT_PX;
   const isSelected = selectedLayerId === node.id;
-  const isHighlighted = isSelected || (frameActive && selectedLayerId === null);
+  const isHighlighted = isFrameRoot
+    ? isSelected || (frameActive && selectedLayerId === null)
+    : isSelected;
 
   function handleChevronClick(e: MouseEvent<HTMLButtonElement>) {
     e.stopPropagation();
     setExpanded((prev) => !prev);
   }
 
-  function handleRowClick() {
+  function handleSelect() {
+    if (isFrameRoot) {
+      selectLayer(node.id);
+      return;
+    }
     focusLayer(node.id);
   }
 
+  const rowClassName = `flex min-w-0 flex-1 items-center gap-0.5 rounded-sm py-[3px] pr-1.5 text-left text-[11px] leading-4 ${
+    isHighlighted
+      ? "bg-[#daebf7] font-medium text-[#18a0fb]"
+      : "text-[#333]"
+  }`;
+
   return (
     <>
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={handleRowClick}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            handleRowClick();
-          }
-        }}
-        className={`group flex w-full min-w-0 cursor-default items-center gap-0.5 rounded-sm py-[3px] pr-1.5 text-left text-[11px] leading-4 ${
-          isHighlighted
-            ? "bg-[#daebf7] font-medium text-[#18a0fb]"
-            : "text-[#333] hover:bg-[#f5f5f5]"
-        }`}
-        style={{ paddingLeft }}
-        aria-current={isSelected ? "true" : undefined}
-      >
-        <button
-          type="button"
-          onClick={hasChildren ? handleChevronClick : undefined}
-          className={`flex size-4 shrink-0 items-center justify-center rounded-sm ${
-            hasChildren ? "hover:bg-black/5" : ""
-          }`}
-          aria-label={hasChildren ? (expanded ? "Collapse layer" : "Expand layer") : undefined}
-          tabIndex={hasChildren ? 0 : -1}
-        >
-          {hasChildren ? <ChevronIcon expanded={expanded} /> : null}
-        </button>
-        <span
-          className={`flex size-4 shrink-0 items-center justify-center ${
-            isHighlighted ? "text-[#18a0fb]" : "text-[#7a7a7a] group-hover:text-[#666]"
-          }`}
-        >
-          <FigmaLayerIconGlyph type={node.icon} />
-        </span>
-        <span className="min-w-0 flex-1 truncate">{node.label}</span>
+      <div className="flex w-full min-w-0 items-center" style={{ paddingLeft }}>
+        {hasChildren ? (
+          <button
+            type="button"
+            onClick={handleChevronClick}
+            className="flex size-4 shrink-0 items-center justify-center rounded-sm hover:bg-black/5"
+            aria-label={expanded ? "Collapse layer" : "Expand layer"}
+          >
+            <ChevronIcon expanded={expanded} />
+          </button>
+        ) : (
+          <span className="size-4 shrink-0" aria-hidden />
+        )}
+
+        <div className={rowClassName}>
+          <span
+            className={`flex size-4 shrink-0 items-center justify-center ${
+              isHighlighted ? "text-[#18a0fb]" : "text-[#7a7a7a]"
+            }`}
+          >
+            <FigmaLayerIconGlyph type={node.icon} />
+          </span>
+          <button
+            type="button"
+            onClick={handleSelect}
+            className={`min-w-0 flex-1 truncate text-left ${
+              isHighlighted ? "text-[#18a0fb]" : "text-[#333] hover:text-[#18a0fb]"
+            }`}
+            aria-current={isSelected ? "true" : undefined}
+          >
+            {node.label}
+          </button>
+          {isFrameRoot ? (
+            <Lock className="size-3 shrink-0 text-[#b3b3b3]" strokeWidth={2} aria-hidden />
+          ) : null}
+        </div>
       </div>
+
       {hasChildren && expanded
         ? [...node.children].reverse().map((child) => (
             <LayerTreeRow key={child.id} node={child} depth={depth + 1} defaultExpanded={defaultExpanded} />
@@ -119,5 +133,5 @@ export function FrameLayerTree({ frameId, label, active, nodes }: FrameLayerTree
     children: nodes,
   };
 
-  return <LayerTreeRow node={frameNode} depth={0} frameActive={active} defaultExpanded />;
+  return <LayerTreeRow node={frameNode} depth={0} frameActive={active} isFrameRoot defaultExpanded />;
 }

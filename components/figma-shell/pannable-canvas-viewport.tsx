@@ -33,7 +33,9 @@ function clampScale(value: number) {
 function isInteractiveTarget(target: EventTarget | null) {
   if (!(target instanceof Element)) return false;
   return Boolean(
-    target.closest('a, button, input, textarea, select, label, summary, [role="button"], [role="link"]'),
+    target.closest(
+      'a, button, input, textarea, select, label, summary, [role="button"], [role="link"], [data-canvas-interactive], [data-figma-frame-label]',
+    ),
   );
 }
 
@@ -51,7 +53,7 @@ function scaleFromViewportWidth(widthPx: number) {
 }
 
 export function PannableCanvasViewport({ children, initialFrameId }: PannableCanvasViewportProps) {
-  const { registerFocusHandler, registerZoomApi, focusLayer, notifyScaleChange } = useFigmaCanvas();
+  const { registerFocusHandler, registerZoomApi, panToLayer, notifyScaleChange } = useFigmaCanvas();
   const panRef = useRef({ x: 0, y: 0 });
   const scaleRef = useRef(1);
   const hasManualZoomRef = useRef(false);
@@ -164,7 +166,7 @@ export function PannableCanvasViewport({ children, initialFrameId }: PannableCan
       if (!target) return;
 
       hasInitialFocusRef.current = true;
-      focusLayer(frameId);
+      panToLayer(frameId);
     }
 
     requestAnimationFrame(tryInitialFocus);
@@ -172,7 +174,7 @@ export function PannableCanvasViewport({ children, initialFrameId }: PannableCan
     return () => {
       cancelled = true;
     };
-  }, [initialFrameId, focusLayer]);
+  }, [initialFrameId, panToLayer]);
 
   const wheelAccumRef = useRef({ x: 0, y: 0 });
   const wheelRafRef = useRef(0);

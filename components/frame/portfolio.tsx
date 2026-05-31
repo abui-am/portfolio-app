@@ -72,7 +72,7 @@ export default function Portfolio() {
   return (
     <section
       ref={ref}
-      className={`frame-animated ${inView ? "frame-in-view" : ""} ${manrope.variable} ${lora.variable} box-border flex w-[1440px] flex-row items-start justify-center gap-x-[124px] bg-[#F8F8F8] px-[128px] py-10`}
+      className={`frame-animated ${inView ? "frame-in-view" : ""} ${manrope.variable} ${lora.variable} box-border flex min-h-[480px] w-[1440px] flex-row items-start justify-center gap-x-[124px] bg-[#F8F8F8] px-[128px] py-10`}
       style={{
         fontFamily: "var(--font-portfolio-sans), ui-sans-serif, system-ui, sans-serif",
       }}

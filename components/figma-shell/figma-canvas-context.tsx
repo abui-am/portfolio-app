@@ -17,7 +17,9 @@ interface ZoomApi {
 }
 
 interface FigmaCanvasContextValue {
+  selectLayer: (layerId: string) => void;
   focusLayer: (layerId: string) => void;
+  panToLayer: (layerId: string) => void;
   registerFocusHandler: (handler: ((layerId: string) => void) | null) => void;
   registerZoomApi: (api: ZoomApi | null) => void;
   zoomIn: () => void;
@@ -75,11 +77,19 @@ export function FigmaCanvasProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const focusLayer = useCallback((layerId: string) => {
+  const selectLayer = useCallback((layerId: string) => {
     selectedLayerIdRef.current = layerId;
     selectionListenersRef.current.forEach((listener) => listener());
+  }, []);
+
+  const panToLayer = useCallback((layerId: string) => {
     focusHandlerRef.current?.(layerId);
   }, []);
+
+  const focusLayer = useCallback((layerId: string) => {
+    selectLayer(layerId);
+    panToLayer(layerId);
+  }, [selectLayer, panToLayer]);
 
   const zoomIn = useCallback(() => {
     zoomApiRef.current?.zoomIn();
@@ -106,7 +116,9 @@ export function FigmaCanvasProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo(
     (): FigmaCanvasContextValue => ({
+      selectLayer,
       focusLayer,
+      panToLayer,
       registerFocusHandler,
       registerZoomApi,
       zoomIn,
@@ -117,7 +129,7 @@ export function FigmaCanvasProvider({ children }: { children: ReactNode }) {
       getSelectedLayerId,
       subscribeSelection,
     }),
-    [focusLayer, registerFocusHandler, registerZoomApi, zoomIn, zoomOut, getScale, subscribeScale, notifyScaleChange, getSelectedLayerId, subscribeSelection],
+    [selectLayer, focusLayer, panToLayer, registerFocusHandler, registerZoomApi, zoomIn, zoomOut, getScale, subscribeScale, notifyScaleChange, getSelectedLayerId, subscribeSelection],
   );
 
   return <FigmaCanvasContext.Provider value={value}>{children}</FigmaCanvasContext.Provider>;
