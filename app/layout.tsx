@@ -18,8 +18,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Portfolio — Figma",
-  description: "Portfolio presented in a Figma-style editor shell.",
+  title: "Abuidillah Adjie Muliadi — Software Engineer",
+  description:
+    "Portfolio of Abuidillah Adjie Muliadi, a software engineer focused on scalable web products with React, Next.js, and TypeScript. Selected work, experience, and projects.",
 };
 
 export const viewport: Viewport = {
