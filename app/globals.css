@@ -119,6 +119,10 @@ body {
     animation-delay: 0.28s;
   }
 
+  .frame-animated.frame-in-view [data-frame-reveal="role"] {
+    animation-delay: 0.24s;
+  }
+
   .frame-animated.frame-in-view [data-frame-reveal="tech"] {
     animation-delay: 0.36s;
   }

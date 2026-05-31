@@ -7,5 +7,6 @@ export type {
   SelectedProjectFrameProps,
   SelectedProjectLinkPart,
   SelectedProjectScreenshot,
+  SelectedProjectTechItem,
   SelectedProjectTextPart,
 } from "@/components/frame/selected-project/types";

@@ -4,6 +4,11 @@ import Image from "next/image";
 import { ChevronRight } from "lucide-react";
 import { useCallback, useState } from "react";
 import { FigmaLayer } from "@/components/figma-shell/figma-layer";
+import {
+  getCarouselNextTop,
+  getCarouselStripHeight,
+  SELECTED_PROJECT_LAYOUT,
+} from "@/components/frame/selected-project/layout";
 import type { SelectedProjectScreenshot } from "@/components/frame/selected-project/types";
 
 interface ProjectScreenshotCarouselProps {
@@ -29,6 +34,8 @@ export function ProjectScreenshotCarousel({
   const scrollStep = screenshots[0]?.width ?? 614;
   const maxOffset = getMaxOffset(screenshots, viewportWidth);
   const [offset, setOffset] = useState(0);
+  const layout = SELECTED_PROJECT_LAYOUT;
+  const carouselStripHeight = getCarouselStripHeight(screenshots);
 
   const handleNext = useCallback(() => {
     setOffset((prev) => {
@@ -49,7 +56,8 @@ export function ProjectScreenshotCarousel({
         name="Carousel"
         icon="group"
         data-frame-reveal="carousel"
-        className="pointer-events-none absolute inset-x-0 top-[423px] h-[379px] overflow-hidden"
+        className="pointer-events-none absolute inset-x-0 overflow-hidden"
+        style={{ top: layout.carouselTop, height: carouselStripHeight }}
         aria-roledescription="carousel"
         aria-label={ariaLabel}
       >
@@ -69,7 +77,8 @@ export function ProjectScreenshotCarousel({
                 alt={shot.alt}
                 width={shot.width}
                 height={shot.height}
-                className="h-[379px] shrink-0 object-cover"
+                className="shrink-0 object-contain"
+                style={{ width: shot.width, height: shot.height }}
                 draggable={false}
                 unoptimized
               />
@@ -85,7 +94,8 @@ export function ProjectScreenshotCarousel({
             onClick={handleNext}
             onPointerDown={stopCanvasPan}
             data-frame-reveal="arrow"
-            className="pointer-events-auto absolute top-[573px] left-[1372px] z-30 flex size-10 items-center justify-center rounded-full bg-black transition-[transform,background-color] duration-200 hover:scale-105 hover:bg-neutral-900 active:scale-95"
+            className="pointer-events-auto absolute z-30 flex size-10 items-center justify-center rounded-full bg-black transition-[transform,background-color] duration-200 hover:scale-105 hover:bg-neutral-900 active:scale-95"
+            style={{ top: getCarouselNextTop(screenshots), left: layout.carouselNextLeft }}
             aria-label="Next screenshot"
           >
             <ChevronRight className="pointer-events-none size-6 text-white" strokeWidth={2.5} aria-hidden />

@@ -5,6 +5,11 @@ import { Lora, Manrope } from "next/font/google";
 import { Globe } from "lucide-react";
 import type { SVGProps } from "react";
 import { ProjectScreenshotCarousel } from "@/components/frame/selected-project/project-screenshot-carousel";
+import { ProjectTechStack } from "@/components/frame/selected-project/project-tech-stack";
+import {
+  getFrameHeight,
+  SELECTED_PROJECT_LAYOUT,
+} from "@/components/frame/selected-project/layout";
 import type {
   SelectedProjectDescriptionPart,
   SelectedProjectFrameProps,
@@ -78,12 +83,15 @@ export function SelectedProjectFrame({
 }: SelectedProjectFrameProps) {
   const { ref, inView } = useFrameInView(0.15);
   const logoSize = project.logo.width ?? 261;
+  const layout = SELECTED_PROJECT_LAYOUT;
+  const frameHeight = getFrameHeight(project.screenshots);
 
   return (
     <section
       ref={ref}
-      className={`frame-animated ${inView ? "frame-in-view" : ""} ${manrope.variable} ${lora.variable} relative h-[860px] w-[1440px] bg-[#F8F8F8]`}
+      className={`frame-animated ${inView ? "frame-in-view" : ""} ${manrope.variable} ${lora.variable} relative w-[1440px] bg-[#F8F8F8]`}
       style={{
+        height: frameHeight,
         fontFamily: "var(--font-portfolio-sans), ui-sans-serif, system-ui, sans-serif",
       }}
       aria-label={project.ariaLabel}
@@ -91,9 +99,15 @@ export function SelectedProjectFrame({
       <FigmaLayer
         name="Hero"
         icon="frame"
-        className="absolute inset-x-0 top-0 flex h-[423px] flex-col items-start gap-2.5 px-[128px] py-10"
+        className="absolute inset-x-0 top-0 flex flex-col items-start gap-2.5 px-[128px] py-10"
+        style={{ height: layout.heroHeight }}
       >
-        <FigmaLayer name="Row" icon="group" className="flex h-[343px] w-[1184px] flex-row items-start justify-between gap-[124px]">
+        <FigmaLayer
+          name="Row"
+          icon="group"
+          className="flex w-[1184px] flex-row items-start justify-between gap-[124px]"
+          style={{ height: layout.rowHeight }}
+        >
           <FigmaLayer name="Copy" icon="frame" className="flex w-[472px] flex-col items-start gap-[13px]">
             {project.badges.length > 0 ? (
               <FigmaLayer name="Badges" icon="group" data-frame-reveal="badge" className="flex flex-row flex-wrap items-start gap-[13px]">
@@ -135,6 +149,18 @@ export function SelectedProjectFrame({
               {project.title}
             </FigmaLayer>
 
+            {project.role ? (
+              <FigmaLayer
+                name="Role"
+                icon="text"
+                as="p"
+                data-frame-reveal="role"
+                className="w-[472px] text-base leading-[22px] text-black/60"
+              >
+                <span className="text-black/80">Role:</span> {project.role}
+              </FigmaLayer>
+            ) : null}
+
             <FigmaLayer
               name="Description"
               icon="text"
@@ -145,17 +171,9 @@ export function SelectedProjectFrame({
               <ProjectDescription description={project.description} />
             </FigmaLayer>
 
-            <FigmaLayer
-              name="Tech stack"
-              icon="text"
-              as="p"
-              data-frame-reveal="tech"
-              className="w-[472px] text-base leading-[22px] text-black/60"
-            >
-              {project.techStack}
-            </FigmaLayer>
+            <ProjectTechStack items={project.techStack} />
 
-            {project.demoUrl || project.githubUrl ? (
+            {project.demoUrl || project.githubUrl || project.githubBeUrl ? (
               <FigmaLayer name="Actions" icon="group" data-frame-reveal="actions" className="flex flex-row items-start gap-[13px]">
                 {project.demoUrl ? (
                   <FigmaLayer name="Demo" icon="component" className="contents">
@@ -180,6 +198,19 @@ export function SelectedProjectFrame({
                     >
                       <IconGithub className="size-6 shrink-0" />
                       Github
+                    </a>
+                  </FigmaLayer>
+                ) : null}
+                {project.githubBeUrl ? (
+                  <FigmaLayer name="Github (BE)" icon="component" className="contents">
+                    <a
+                      href={project.githubBeUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex h-[41px] items-center justify-center gap-1 rounded-full border border-black bg-white px-4 py-2 text-lg leading-[25px] text-black transition-[transform,background-color] duration-200 hover:scale-[1.03] hover:bg-neutral-50 active:scale-[0.98]"
+                    >
+                      <IconGithub className="size-6 shrink-0" />
+                      Github (BE)
                     </a>
                   </FigmaLayer>
                 ) : null}

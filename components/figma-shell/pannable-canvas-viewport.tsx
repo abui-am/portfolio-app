@@ -56,6 +56,15 @@ function isInteractiveTarget(target: EventTarget | null) {
   );
 }
 
+const COPYABLE_TEXT_SELECTOR =
+  'p, h1, h2, h3, h4, h5, h6, li, pre, code, blockquote, figcaption, td, th, time, a, span:not([data-frame-dot]):not([aria-hidden])';
+
+function isCopyableTextTarget(target: EventTarget | null) {
+  if (!(target instanceof Element)) return false;
+  if (target.closest("button, [role='button']")) return false;
+  return Boolean(target.closest(COPYABLE_TEXT_SELECTOR));
+}
+
 function isTypingTarget(target: EventTarget | null) {
   if (!(target instanceof HTMLElement)) return false;
   return target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable;
@@ -379,7 +388,12 @@ export function PannableCanvasViewport({ children, initialFrameId }: PannableCan
   }, []);
 
   const beginDrag = useCallback(
-    (pointerId: number, startX: number, startY: number, originX: number, originY: number) => {
+    (viewport: HTMLDivElement, pointerId: number, startX: number, startY: number, originX: number, originY: number) => {
+      try {
+        viewport.setPointerCapture(pointerId);
+      } catch {
+        /* ignore */
+      }
       dragRef.current = { pointerId, startX, startY, originX, originY };
       pendingDragRef.current = null;
       setIsGrabbing(true);
@@ -409,18 +423,12 @@ export function PannableCanvasViewport({ children, initialFrameId }: PannableCan
   const onPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     if (e.button === 2) return;
     if (isInteractiveTarget(e.target)) return;
+    if (isCopyableTextTarget(e.target)) return;
     if (pinchRef.current) return;
 
     const isMiddle = e.button === 1;
     const isPrimary = e.button === 0;
     if (!isPrimary && !isMiddle) return;
-
-    e.preventDefault();
-    try {
-      e.currentTarget.setPointerCapture(e.pointerId);
-    } catch {
-      /* ignore */
-    }
 
     const p = panRef.current;
     pendingDragRef.current = {
@@ -431,6 +439,15 @@ export function PannableCanvasViewport({ children, initialFrameId }: PannableCan
       originY: p.y,
       target: e.target,
     };
+
+    if (e.pointerType === "touch") {
+      e.preventDefault();
+      try {
+        e.currentTarget.setPointerCapture(e.pointerId);
+      } catch {
+        /* ignore */
+      }
+    }
   }, []);
 
   const onPointerMove = useCallback(
@@ -449,7 +466,7 @@ export function PannableCanvasViewport({ children, initialFrameId }: PannableCan
         }
 
         e.preventDefault();
-        beginDrag(pending.pointerId, pending.startX, pending.startY, pending.originX, pending.originY);
+        beginDrag(viewport, pending.pointerId, pending.startX, pending.startY, pending.originX, pending.originY);
       }
 
       const d = dragRef.current;
@@ -555,8 +572,8 @@ export function PannableCanvasViewport({ children, initialFrameId }: PannableCan
   return (
     <div
       ref={viewportRef}
-      className={`relative flex min-h-0 flex-1 touch-none items-center justify-center overflow-hidden bg-[#f5f5f5] ${isGrabbing ? "select-none" : ""}`}
-      style={{ cursor, touchAction: "none" }}
+      className={`relative flex min-h-0 flex-1 items-center justify-center overflow-hidden bg-[#f5f5f5] ${isGrabbing ? "touch-none select-none" : ""}`}
+      style={{ cursor, touchAction: isGrabbing ? "none" : "manipulation" }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}

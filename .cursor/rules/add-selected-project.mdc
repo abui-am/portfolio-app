@@ -1,0 +1,56 @@
+---
+description: Checklist for adding a new Selected Project canvas frame to the portfolio
+globs: content/selected-projects.ts,public/content/**,components/frame/selected-project/**
+alwaysApply: false
+---
+
+# Add a Selected Project
+
+Data-driven frames only — do not add a new React frame component unless layout requirements change.
+
+## Checklist
+
+1. **Assets** — `public/content/<slug>/`
+   - `logo.svg` (261×261 in frame)
+   - `image_1.png`, `image_2.png`, … carousel shots (`width: 614`, `height: 379` in data unless Figma says otherwise)
+
+2. **Tech icons** — Reuse `public/nextjs.svg`, `typescript.svg`, `openai.svg`, `python.svg`, or add a 32×32 SVG in `public/`.
+
+3. **Content** — [`content/selected-projects.ts`](content/selected-projects.ts):
+   - `id`: kebab-case (canvas `data-figma-frame-id`)
+   - `frameLabel`: `Selected Project - N` (increment N)
+   - `ariaLabel`: `Selected Project - <Title>`
+   - `badges`: `Selected Work #N`, `#7C4DFF`, `rgba(97,85,245,0.1)` unless design differs
+   - `description`: string or `[{ type: 'text' | 'link', ... }]`
+   - `techStack`: `{ label, iconSrc }[]`
+   - `role`, `demoUrl`, `githubUrl`, optional `githubBeUrl`
+   - Append to `selectedProjects` — no edit to `canvas-frames.tsx`
+
+4. **Components** — Only for new cross-project fields. Update `types.ts` + `selected-project-frame.tsx` once.
+
+5. **Animations** — Handled by `SelectedProjectFrame`; see `frame-animations.mdc`.
+
+6. **Verify** — `pnpm dev`, pan to `frameLabel`, test links, carousel, reduced motion.
+
+## Example
+
+```ts
+export const myProject: SelectedProject = {
+  id: "my-app",
+  frameLabel: "Selected Project - 3",
+  ariaLabel: "Selected Project - My App",
+  badges: [{ label: "Selected Work #3", dotColor: "#7C4DFF", textColor: "#7C4DFF", backgroundColor: "rgba(97,85,245,0.1)" }],
+  title: "My App",
+  role: "Product + Engineer", // optional; omit if not a role line — mention context in description instead
+  description: "Plain string or link parts array.",
+  techStack: [
+    { label: "Next.js", iconSrc: "/nextjs.svg" },
+    { label: "TypeScript", iconSrc: "/typescript.svg" },
+  ],
+  demoUrl: "https://example.com",
+  githubUrl: "https://github.com/you/fe",
+  githubBeUrl: "https://github.com/you/be", // optional
+  logo: { src: "/content/my-app/logo.svg", alt: "My App logo" },
+  screenshots: [{ src: "/content/my-app/image_1.png", width: 614, height: 379, alt: "Screenshot 1" }],
+};
+```

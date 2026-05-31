@@ -27,17 +27,24 @@ export interface SelectedProjectLinkPart {
 
 export type SelectedProjectDescriptionPart = SelectedProjectTextPart | SelectedProjectLinkPart;
 
+export interface SelectedProjectTechItem {
+  label: string;
+  iconSrc: string;
+}
+
 export interface SelectedProject {
   id: string;
   frameLabel: string;
   ariaLabel: string;
   badges: SelectedProjectBadge[];
   title: string;
+  role?: string;
   /** Plain string or structured parts for inline links */
   description: string | SelectedProjectDescriptionPart[];
-  techStack: string;
+  techStack: SelectedProjectTechItem[];
   demoUrl?: string;
   githubUrl?: string;
+  githubBeUrl?: string;
   logo: {
     src: string;
     alt: string;

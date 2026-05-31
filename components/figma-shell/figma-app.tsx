@@ -396,7 +396,7 @@ function CanvasFrame({
         }`}
       >
         <FigmaFrameRoot frameId={id} label={label} active={isHighlighted}>
-          <div className="relative z-0 cursor-auto select-text [&_a]:relative [&_a]:z-20 [&_a]:cursor-pointer [&_button]:relative [&_button]:z-20 [&_button]:cursor-pointer [&_h1]:cursor-text [&_h2]:cursor-text [&_p]:cursor-text [&_pre]:cursor-text">
+          <div className="relative z-0 touch-auto cursor-auto select-text [touch-action:auto] [&_a]:relative [&_a]:z-20 [&_a]:cursor-pointer [&_button]:relative [&_button]:z-20 [&_button]:cursor-pointer [&_h1]:cursor-text [&_h2]:cursor-text [&_p]:cursor-text [&_pre]:cursor-text">
             {children}
           </div>
         </FigmaFrameRoot>
