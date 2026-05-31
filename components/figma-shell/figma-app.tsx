@@ -1,7 +1,13 @@
-import type { ReactNode, SVGProps } from "react";
+"use client";
+
+import { useCallback, useEffect, useState, type ReactNode, type SVGProps } from "react";
+import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { PannableCanvasViewport } from "@/components/figma-shell/pannable-canvas-viewport";
-import Portfolio from "../frame/portfolio";
-import SelectedProjectBli from "../frame/selected-project-bli";
+import { FigmaCanvasProvider, useCanvasScale, useFigmaCanvas } from "@/components/figma-shell/figma-canvas-context";
+import { FigmaLeftPanelLayers } from "@/components/figma-shell/figma-left-panel-layers";
+import { FigmaFrameRoot } from "@/components/figma-shell/figma-layer";
+import { FigmaLayersProvider } from "@/components/figma-shell/figma-layers-context";
+import { getCanvasFrames, PRIMARY_CANVAS_FRAME_ID } from "@/content/canvas-frames";
 
 const TOP_BAR_PX = 40;
 
@@ -131,7 +137,56 @@ function IconLayersMulti(props: SVGProps<SVGSVGElement>) {
 const border = "border-[#e6e6e6]";
 const figmaBlue = "#18a0fb";
 
-function TopBar() {
+function ZoomControls({ compact = false }: { compact?: boolean }) {
+  const scale = useCanvasScale();
+  const { zoomIn, zoomOut } = useFigmaCanvas();
+  const zoomLabel = `${Math.round(scale * 100)}%`;
+
+  if (compact) {
+    return (
+      <div className="flex items-center gap-1 rounded-full border border-[#e6e6e6] bg-white/95 px-2 py-1 shadow-lg backdrop-blur-sm">
+        <button
+          type="button"
+          onClick={zoomOut}
+          className="flex size-7 items-center justify-center rounded-full text-[#333] hover:bg-[#f5f5f5]"
+          aria-label="Zoom out"
+        >
+          <IconMinus className="size-4" />
+        </button>
+        <span className="min-w-[3rem] text-center text-[12px] tabular-nums text-[#333]">{zoomLabel}</span>
+        <button
+          type="button"
+          onClick={zoomIn}
+          className="flex size-7 items-center justify-center rounded-full text-[#333] hover:bg-[#f5f5f5]"
+          aria-label="Zoom in"
+        >
+          <IconPlus className="size-4" />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      className="ml-1 flex h-7 shrink-0 items-center gap-1 rounded border border-[#e6e6e6] bg-white px-2 text-[12px] tabular-nums text-[#333] hover:bg-[#fafafa]"
+      aria-label={`Zoom ${zoomLabel}. Ctrl+plus to zoom in, Ctrl+minus to zoom out.`}
+    >
+      <span>{zoomLabel}</span>
+      <IconChevronDown className="size-3 text-[#7a7a7a]" />
+    </button>
+  );
+}
+
+function TopBar({
+  onTogglePresentation,
+  isChromeHidden,
+  onToggleChrome,
+}: {
+  onTogglePresentation: () => void;
+  isChromeHidden: boolean;
+  onToggleChrome: () => void;
+}) {
   return (
     <header
       className={`flex shrink-0 items-center gap-0.5 border-b ${border} bg-white px-1`}
@@ -144,20 +199,34 @@ function TopBar() {
       >
         <IconHome className="size-[18px]" />
       </button>
-      <button
-        type="button"
-        className="flex size-8 shrink-0 items-center justify-center rounded text-[#b3b3b3] hover:bg-[#f5f5f5]"
-        aria-label="Back"
-      >
-        <IconChevronLeft className="size-[18px]" />
-      </button>
-      <button
-        type="button"
-        className="flex size-8 shrink-0 items-center justify-center rounded text-[#b3b3b3] hover:bg-[#f5f5f5]"
-        aria-label="Forward"
-      >
-        <IconChevronRight className="size-[18px]" />
-      </button>
+      {isChromeHidden ? (
+        <button
+          type="button"
+          onClick={onToggleChrome}
+          className="flex size-8 shrink-0 items-center justify-center rounded text-[#333] hover:bg-[#f5f5f5]"
+          aria-label="Show UI"
+          title="Show UI (Ctrl+\)"
+        >
+          <PanelLeftOpen className="size-[18px]" strokeWidth={2} aria-hidden />
+        </button>
+      ) : (
+        <>
+          <button
+            type="button"
+            className="flex size-8 shrink-0 items-center justify-center rounded text-[#b3b3b3] hover:bg-[#f5f5f5]"
+            aria-label="Back"
+          >
+            <IconChevronLeft className="size-[18px]" />
+          </button>
+          <button
+            type="button"
+            className="flex size-8 shrink-0 items-center justify-center rounded text-[#b3b3b3] hover:bg-[#f5f5f5]"
+            aria-label="Forward"
+          >
+            <IconChevronRight className="size-[18px]" />
+          </button>
+        </>
+      )}
 
       <div className="mx-0.5 flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto">
         <div className="flex h-7 shrink-0 items-center gap-1.5 rounded-md bg-white pl-2 pr-1 shadow-[inset_0_0_0_1px_#e6e6e6]">
@@ -187,7 +256,12 @@ function TopBar() {
         >
           A
         </div>
-        <button type="button" className="flex size-8 items-center justify-center rounded text-[#333] hover:bg-[#f5f5f5]" aria-label="Preview">
+        <button
+          type="button"
+          onClick={onTogglePresentation}
+          className="flex size-8 items-center justify-center rounded text-[#333] hover:bg-[#f5f5f5]"
+          aria-label="Enter presentation mode"
+        >
           <IconPlayOutline className="size-[18px]" />
         </button>
         <button
@@ -197,13 +271,7 @@ function TopBar() {
         >
           Share
         </button>
-        <button
-          type="button"
-          className="ml-1 flex h-7 shrink-0 items-center gap-1 rounded border border-[#e6e6e6] bg-white px-2 text-[12px] tabular-nums text-[#333] hover:bg-[#fafafa]"
-        >
-          <span>37%</span>
-          <IconChevronDown className="size-3 text-[#7a7a7a]" />
-        </button>
+        <ZoomControls />
       </div>
     </header>
   );
@@ -234,7 +302,7 @@ function LayerRow({
   );
 }
 
-function LeftPanel() {
+function LeftPanel({ onToggleChrome }: { onToggleChrome: () => void }) {
   return (
     <aside className={`flex w-[240px] shrink-0 flex-col border-r ${border} bg-white`}>
       <div className={`flex items-center gap-2 border-b ${border} px-3 py-2`}>
@@ -246,6 +314,15 @@ function LeftPanel() {
           </button>
           <p className="truncate text-[11px] leading-4 text-[#7a7a7a]">Drafts · Free</p>
         </div>
+        <button
+          type="button"
+          onClick={onToggleChrome}
+          className="flex size-7 shrink-0 items-center justify-center rounded text-[#7a7a7a] hover:bg-[#f5f5f5] hover:text-[#333]"
+          aria-label="Hide UI"
+          title="Hide UI (Ctrl+\)"
+        >
+          <PanelLeftClose className="size-4" strokeWidth={2} aria-hidden />
+        </button>
       </div>
       <div className={`flex items-center justify-between border-b ${border} px-3 py-2`}>
         <div className="flex gap-4 text-[12px] font-medium">
@@ -273,16 +350,7 @@ function LeftPanel() {
               <IconLayersMulti className="size-3.5" />
             </button>
           </div>
-          <div className="space-y-px">
-            <LayerRow depth={0} icon={<IconImage className="size-3.5" />} label="Image" />
-            <LayerRow depth={0} icon={<span className="text-[11px] font-semibold">#</span>} label="Desktop - 1" active />
-            <LayerRow depth={0} icon={<span className="text-[11px] font-semibold">#</span>} label="Selected Project - 1" />
-            <LayerRow depth={1} icon={<span className="text-[11px] font-semibold">#</span>} label="Hero" />
-            <LayerRow depth={1} icon={<span className="text-[11px] font-semibold">#</span>} label="Section" />
-            <LayerRow depth={2} icon={<span className="text-[12px] font-bold">T</span>} label="Heading" />
-            <LayerRow depth={2} icon={<span className="text-[10px]">□</span>} label="Placeholder" />
-            <LayerRow depth={1} icon={<span className="text-[10px]">□</span>} label="Rectangle" />
-          </div>
+          <FigmaLeftPanelLayers />
         </div>
       </div>
     </aside>
@@ -338,44 +406,219 @@ function RightPanel() {
   );
 }
 
-function CanvasFrame({ label, children }: { label: string; children: React.ReactNode }) {
+function CanvasFrame({
+  id,
+  label,
+  active,
+  children,
+}: {
+  id: string;
+  label: string;
+  active?: boolean;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="relative shrink-0 w-[1440px]">
+    <div className="relative shrink-0 w-[1440px]" data-figma-frame-id={id}>
       <div className="absolute -top-5 left-0 text-[11px] font-medium text-[#18a0fb]">{label}</div>
       <div className="relative overflow-hidden rounded-sm border border-[#c7c7c7] bg-white shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
         <div className="pointer-events-none absolute inset-0 z-10 rounded-sm ring-1 ring-[#18a0fb]/45" aria-hidden />
-        <div className="relative z-0 [&_a]:cursor-pointer [&_button]:cursor-pointer">{children}</div>
+        <FigmaFrameRoot frameId={id} label={label} active={active}>
+          <div className="relative z-0 [&_a]:cursor-pointer [&_button]:cursor-pointer">{children}</div>
+        </FigmaFrameRoot>
       </div>
     </div>
   );
 }
 
 function DummyCanvasFrame() {
+  const canvasFrames = getCanvasFrames();
+
   return (
-    <PannableCanvasViewport>
+    <PannableCanvasViewport initialFrameId={PRIMARY_CANVAS_FRAME_ID}>
       <div className="flex shrink-0 flex-col gap-12">
-        <CanvasFrame label="Desktop - 1">
-          <Portfolio />
-        </CanvasFrame>
-        <CanvasFrame label="Selected Project - 1">
-          <SelectedProjectBli />
-        </CanvasFrame>
+        {canvasFrames.map((frame) => (
+          <CanvasFrame key={frame.id} id={frame.id} label={frame.label} active={frame.active}>
+            {frame.content}
+          </CanvasFrame>
+        ))}
       </div>
     </PannableCanvasViewport>
   );
 }
 
-export function FigmaApp() {
+function PresentationOverlay({
+  onExit,
+  onHideToolbar,
+}: {
+  onExit: () => void;
+  onHideToolbar: () => void;
+}) {
   return (
-    <div className="flex h-screen min-h-0 min-w-[1024px] flex-col bg-white text-[#333]">
-      <TopBar />
-      <div className="flex min-h-0 flex-1">
-        <LeftPanel />
-        <main className="relative flex min-h-0 min-w-0 flex-1 flex-col bg-[#f5f5f5]">
-          <DummyCanvasFrame />
-        </main>
-        <RightPanel />
+    <div className="pointer-events-none absolute inset-x-0 bottom-6 z-50 flex justify-center">
+      <div className="pointer-events-auto flex items-center gap-3 rounded-full border border-[#e6e6e6] bg-white/95 px-4 py-2 shadow-lg backdrop-blur-sm">
+        <button
+          type="button"
+          onClick={onExit}
+          className="rounded-full px-3 py-1.5 text-[12px] font-medium text-[#333] hover:bg-[#f5f5f5]"
+        >
+          Exit presentation
+        </button>
+        <span className="text-[11px] text-[#7a7a7a]">Esc</span>
+        <button
+          type="button"
+          onClick={onHideToolbar}
+          className="rounded-full px-3 py-1.5 text-[12px] font-medium text-[#333] hover:bg-[#f5f5f5]"
+        >
+          Hide toolbar
+        </button>
+        <ZoomControls compact />
       </div>
     </div>
+  );
+}
+
+function PresentationToolbarReveal({
+  onShowToolbar,
+  onExit,
+}: {
+  onShowToolbar: () => void;
+  onExit: () => void;
+}) {
+  return (
+    <div
+      className="group absolute inset-x-0 bottom-0 z-50 flex h-14 items-end justify-center pb-3"
+      onMouseEnter={onShowToolbar}
+    >
+      <div className="pointer-events-none rounded-full bg-black/50 px-3 py-1 text-[11px] text-white opacity-0 transition-opacity group-hover:opacity-100">
+        Move cursor here to show toolbar · Esc to exit
+      </div>
+      <button
+        type="button"
+        onClick={onExit}
+        className="pointer-events-auto absolute bottom-3 right-3 rounded-md border border-[#e6e6e6] bg-white/95 px-2.5 py-1.5 text-[11px] font-medium text-[#333] opacity-0 shadow-md backdrop-blur-sm transition-opacity group-hover:opacity-100 hover:bg-white"
+      >
+        Exit
+      </button>
+    </div>
+  );
+}
+
+function FigmaAppShell() {
+  const [isPresentationMode, setIsPresentationMode] = useState(false);
+  const [isChromeHidden, setIsChromeHidden] = useState(false);
+  const [isPresentationToolbarHidden, setIsPresentationToolbarHidden] = useState(false);
+
+  const toggleChrome = useCallback(() => {
+    setIsChromeHidden((prev) => !prev);
+  }, []);
+
+  const exitPresentation = useCallback(async () => {
+    setIsPresentationMode(false);
+    setIsPresentationToolbarHidden(false);
+    setIsChromeHidden(false);
+    if (document.fullscreenElement) {
+      try {
+        await document.exitFullscreen();
+      } catch {
+        /* ignore */
+      }
+    }
+  }, []);
+
+  const enterPresentation = useCallback(async () => {
+    setIsPresentationMode(true);
+    setIsChromeHidden(true);
+    setIsPresentationToolbarHidden(false);
+    try {
+      await document.documentElement.requestFullscreen();
+    } catch {
+      /* fullscreen optional — UI chrome still hides */
+    }
+  }, []);
+
+  const togglePresentation = useCallback(() => {
+    if (isPresentationMode) {
+      void exitPresentation();
+      return;
+    }
+    void enterPresentation();
+  }, [enterPresentation, exitPresentation, isPresentationMode]);
+
+  useEffect(() => {
+    function onFullscreenChange() {
+      if (!document.fullscreenElement) {
+        setIsPresentationMode(false);
+      }
+    }
+
+    document.addEventListener("fullscreenchange", onFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", onFullscreenChange);
+  }, []);
+
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      const modKey = e.ctrlKey || e.metaKey;
+
+      if (modKey && e.key === "\\") {
+        e.preventDefault();
+        if (isPresentationMode) {
+          setIsPresentationToolbarHidden((prev) => !prev);
+          return;
+        }
+        setIsChromeHidden((prev) => !prev);
+        return;
+      }
+
+      if (!isPresentationMode) return;
+      if (e.key !== "Escape") return;
+      e.preventDefault();
+      void exitPresentation();
+    }
+
+    window.addEventListener("keydown", onKeyDown, { capture: true });
+    return () => window.removeEventListener("keydown", onKeyDown, { capture: true });
+  }, [exitPresentation, isPresentationMode]);
+
+  const arePanelsHidden = isChromeHidden || isPresentationMode;
+
+  return (
+    <div className={`flex h-screen min-h-0 flex-col bg-white text-[#333] ${arePanelsHidden && isPresentationMode ? "" : "min-w-[1024px]"}`}>
+      {!isPresentationMode ? (
+        <TopBar
+          onTogglePresentation={togglePresentation}
+          isChromeHidden={isChromeHidden}
+          onToggleChrome={toggleChrome}
+        />
+      ) : null}
+      <div className="relative flex min-h-0 flex-1">
+        {!arePanelsHidden ? <LeftPanel onToggleChrome={toggleChrome} /> : null}
+        <main className="relative flex min-h-0 min-w-0 flex-1 flex-col bg-[#f5f5f5]">
+          <DummyCanvasFrame />
+          {isPresentationMode && !isPresentationToolbarHidden ? (
+            <PresentationOverlay
+              onExit={exitPresentation}
+              onHideToolbar={() => setIsPresentationToolbarHidden(true)}
+            />
+          ) : null}
+          {isPresentationMode && isPresentationToolbarHidden ? (
+            <PresentationToolbarReveal
+              onShowToolbar={() => setIsPresentationToolbarHidden(false)}
+              onExit={exitPresentation}
+            />
+          ) : null}
+        </main>
+        {!arePanelsHidden ? <RightPanel /> : null}
+      </div>
+    </div>
+  );
+}
+
+export function FigmaApp() {
+  return (
+    <FigmaLayersProvider>
+      <FigmaCanvasProvider>
+        <FigmaAppShell />
+      </FigmaCanvasProvider>
+    </FigmaLayersProvider>
   );
 }

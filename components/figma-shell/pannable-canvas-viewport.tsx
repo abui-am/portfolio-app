@@ -1,22 +1,30 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useFigmaCanvas } from "@/components/figma-shell/figma-canvas-context";
+import { findLayerElement, getLayerBounds } from "@/components/figma-shell/layer-focus";
 
 interface PannableCanvasViewportProps {
   children: React.ReactNode;
+  initialFrameId?: string;
 }
 
 const MIN_SCALE = 0.25;
 const MAX_SCALE = 4;
-/** Viewport width (px) at which canvas scale is 1. Narrower → zoom out, wider → zoom in. */
 const REFERENCE_VIEWPORT_WIDTH_PX = 1440;
-/**
- * For widths above the reference width, only this fraction of the extra linear scale is applied,
- * so ultra-wide screens stay a bit smaller than a full width/1440 zoom-in.
- */
 const WIDE_SCREEN_SCALE_DAMPING = 0.0;
-/** Mac trackpad pinch sends `wheel` + `ctrlKey` (Chrome, Safari, Edge). */
 const PINCH_ZOOM_SENSITIVITY = 0.01;
+const ZOOM_STEP_PERCENT = 50;
+
+function getNextZoomIn(scale: number) {
+  const nextPercent = Math.floor((scale * 100) / ZOOM_STEP_PERCENT) * ZOOM_STEP_PERCENT + ZOOM_STEP_PERCENT;
+  return clampScale(nextPercent / 100);
+}
+
+function getNextZoomOut(scale: number) {
+  const nextPercent = Math.ceil((scale * 100) / ZOOM_STEP_PERCENT) * ZOOM_STEP_PERCENT - ZOOM_STEP_PERCENT;
+  return clampScale(Math.max(MIN_SCALE * 100, nextPercent) / 100);
+}
 
 function clampScale(value: number) {
   return Math.min(MAX_SCALE, Math.max(MIN_SCALE, value));
@@ -29,6 +37,11 @@ function isInteractiveTarget(target: EventTarget | null) {
   );
 }
 
+function isTypingTarget(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) return false;
+  return target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable;
+}
+
 function scaleFromViewportWidth(widthPx: number) {
   if (widthPx <= 0) return clampScale(1);
   const linear = widthPx / REFERENCE_VIEWPORT_WIDTH_PX;
@@ -37,12 +50,13 @@ function scaleFromViewportWidth(widthPx: number) {
   return clampScale(1 + excessAboveOne * WIDE_SCREEN_SCALE_DAMPING);
 }
 
-export function PannableCanvasViewport({ children }: PannableCanvasViewportProps) {
+export function PannableCanvasViewport({ children, initialFrameId }: PannableCanvasViewportProps) {
+  const { registerFocusHandler, registerZoomApi, focusLayer, notifyScaleChange } = useFigmaCanvas();
   const panRef = useRef({ x: 0, y: 0 });
   const scaleRef = useRef(1);
+  const hasManualZoomRef = useRef(false);
 
   const layerRef = useRef<HTMLDivElement>(null);
-
   const applyTransformRef = useRef(() => {});
 
   applyTransformRef.current = () => {
@@ -63,21 +77,131 @@ export function PannableCanvasViewport({ children }: PannableCanvasViewportProps
 
   const [isGrabbing, setIsGrabbing] = useState(false);
   const viewportRef = useRef<HTMLDivElement>(null);
+  const hasInitialFocusRef = useRef(false);
+
+  const setScaleAtViewportCenter = useCallback((targetScale: number) => {
+    const oldScale = scaleRef.current;
+    const newScale = clampScale(targetScale);
+    if (newScale === oldScale) return;
+
+    hasManualZoomRef.current = true;
+    const ratio = newScale / oldScale;
+    panRef.current = {
+      x: panRef.current.x * ratio,
+      y: panRef.current.y * ratio,
+    };
+    scaleRef.current = newScale;
+    applyTransformRef.current();
+    notifyScaleChange();
+  }, [notifyScaleChange]);
+
+  const zoomIn = useCallback(
+    () => setScaleAtViewportCenter(getNextZoomIn(scaleRef.current)),
+    [setScaleAtViewportCenter],
+  );
+  const zoomOut = useCallback(
+    () => setScaleAtViewportCenter(getNextZoomOut(scaleRef.current)),
+    [setScaleAtViewportCenter],
+  );
+
+  const focusOnLayer = useCallback((layerId: string) => {
+    const viewport = viewportRef.current;
+    const layer = layerRef.current;
+    if (!viewport || !layer) return;
+
+    const target = findLayerElement(layer, layerId);
+    if (!target) return;
+
+    const bounds = getLayerBounds(target);
+    if (bounds.width === 0 && bounds.height === 0) return;
+
+    const viewportRect = viewport.getBoundingClientRect();
+    const targetCenterX = bounds.left + bounds.width / 2;
+    const targetCenterY = bounds.top + bounds.height / 2;
+    const viewportCenterX = viewportRect.left + viewportRect.width / 2;
+    const viewportCenterY = viewportRect.top + viewportRect.height / 2;
+
+    panRef.current = {
+      x: panRef.current.x + (viewportCenterX - targetCenterX),
+      y: panRef.current.y + (viewportCenterY - targetCenterY),
+    };
+    applyTransformRef.current();
+  }, []);
+
+  useLayoutEffect(() => {
+    registerFocusHandler(focusOnLayer);
+    return () => registerFocusHandler(null);
+  }, [focusOnLayer, registerFocusHandler]);
+
+  useLayoutEffect(() => {
+    registerZoomApi({
+      zoomIn,
+      zoomOut,
+      getScale: () => scaleRef.current,
+    });
+    return () => registerZoomApi(null);
+  }, [zoomIn, zoomOut, registerZoomApi]);
+
+  useEffect(() => {
+    if (!initialFrameId || hasInitialFocusRef.current) return;
+
+    const frameId = initialFrameId;
+    let cancelled = false;
+    let attempts = 0;
+
+    function tryInitialFocus() {
+      if (cancelled || hasInitialFocusRef.current) return;
+
+      const layer = layerRef.current;
+      const target = layer ? findLayerElement(layer, frameId) : null;
+
+      if (!target && attempts < 20) {
+        attempts += 1;
+        requestAnimationFrame(tryInitialFocus);
+        return;
+      }
+
+      if (!target) return;
+
+      hasInitialFocusRef.current = true;
+      focusLayer(frameId);
+    }
+
+    requestAnimationFrame(tryInitialFocus);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [initialFrameId, focusLayer]);
 
   const wheelAccumRef = useRef({ x: 0, y: 0 });
   const wheelRafRef = useRef(0);
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
+      if (isTypingTarget(e.target)) return;
+
+      const modKey = e.ctrlKey || e.metaKey;
+
+      if (modKey && (e.key === "=" || e.key === "+" || e.code === "Equal")) {
+        e.preventDefault();
+        zoomIn();
+        return;
+      }
+
+      if (modKey && (e.key === "-" || e.code === "Minus")) {
+        e.preventDefault();
+        zoomOut();
+        return;
+      }
+
       if (e.code !== "Space" || e.repeat) return;
-      const t = e.target as HTMLElement | null;
-      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
       e.preventDefault();
     }
 
     window.addEventListener("keydown", onKeyDown, { capture: true });
     return () => window.removeEventListener("keydown", onKeyDown, { capture: true });
-  }, []);
+  }, [zoomIn, zoomOut]);
 
   useLayoutEffect(() => {
     const el = viewportRef.current;
@@ -88,8 +212,11 @@ export function PannableCanvasViewport({ children }: PannableCanvasViewportProps
     function applyScaleFromWidth(width: number) {
       if (Math.abs(width - lastWidth) < 0.5) return;
       lastWidth = width;
+      if (hasManualZoomRef.current) return;
+
       scaleRef.current = scaleFromViewportWidth(width);
       applyTransformRef.current();
+      notifyScaleChange();
     }
 
     applyScaleFromWidth(el.getBoundingClientRect().width);
@@ -100,7 +227,7 @@ export function PannableCanvasViewport({ children }: PannableCanvasViewportProps
     });
     ro.observe(el);
     return () => ro.disconnect();
-  }, []);
+  }, [notifyScaleChange]);
 
   useEffect(() => {
     const el = viewportRef.current;
@@ -120,11 +247,27 @@ export function PannableCanvasViewport({ children }: PannableCanvasViewportProps
 
     function onWheel(e: WheelEvent) {
       e.preventDefault();
+      if (!el) return;
 
       if (e.ctrlKey) {
+        hasManualZoomRef.current = true;
         const factor = Math.exp(-e.deltaY * PINCH_ZOOM_SENSITIVITY);
-        scaleRef.current = clampScale(scaleRef.current * factor);
+        const oldScale = scaleRef.current;
+        const newScale = clampScale(oldScale * factor);
+        if (newScale === oldScale) return;
+
+        const viewportRect = el.getBoundingClientRect();
+        const focusX = e.clientX - viewportRect.left - viewportRect.width / 2;
+        const focusY = e.clientY - viewportRect.top - viewportRect.height / 2;
+        const ratio = newScale / oldScale;
+
+        panRef.current = {
+          x: panRef.current.x * ratio + focusX * (1 - ratio),
+          y: panRef.current.y * ratio + focusY * (1 - ratio),
+        };
+        scaleRef.current = newScale;
         applyTransformRef.current();
+        notifyScaleChange();
         return;
       }
 
@@ -140,7 +283,7 @@ export function PannableCanvasViewport({ children }: PannableCanvasViewportProps
       el.removeEventListener("wheel", onWheel);
       if (wheelRafRef.current) cancelAnimationFrame(wheelRafRef.current);
     };
-  }, []);
+  }, [notifyScaleChange]);
 
   const endDrag = useCallback(() => {
     dragRef.current = null;
@@ -214,7 +357,7 @@ export function PannableCanvasViewport({ children }: PannableCanvasViewportProps
       onPointerCancel={onPointerCancel}
       onAuxClick={(e) => e.button === 1 && e.preventDefault()}
       role="application"
-      aria-label="Canvas. Drag to pan. Two-finger scroll to pan. Pinch to zoom."
+      aria-label="Canvas. Drag to pan. Two-finger scroll to pan. Pinch or Ctrl+/- to zoom."
     >
       <div
         ref={layerRef}

@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Lora, Manrope } from "next/font/google";
 import { PortfolioTerminal } from "@/components/frame/portfolio-terminal";
 import { useFrameInView } from "@/components/frame/use-frame-in-view";
+import { FigmaLayer } from "@/components/figma-shell/figma-layer";
 import { Button } from "@/components/ui/button";
 
 const manrope = Manrope({
@@ -77,8 +78,10 @@ export default function Portfolio() {
       }}
       aria-label="Hero"
     >
-      <div className="flex w-[472px] shrink-0 flex-col gap-[13px]">
-        <div
+      <FigmaLayer name="Hero" icon="frame" className="flex w-[472px] shrink-0 flex-col gap-[13px]">
+        <FigmaLayer
+          name="Available for work"
+          icon="frame"
           data-frame-reveal="badge"
           className="inline-flex w-fit max-w-full items-center gap-2.5 rounded-lg py-2 pr-3 pl-3"
           style={{ backgroundColor: accentMuted }}
@@ -95,9 +98,12 @@ export default function Portfolio() {
           >
             Available for work
           </span>
-        </div>
+        </FigmaLayer>
 
-        <h1
+        <FigmaLayer
+          name="Hi, It's Me..."
+          icon="text"
+          as="h1"
           data-frame-reveal="title"
           className="text-[clamp(2rem,4vw,3.25rem)] leading-[1.12] tracking-tight"
           style={{
@@ -106,14 +112,20 @@ export default function Portfolio() {
           }}
         >
           Hi, It’s Me. Abuidillah Adjie Muliadi
-        </h1>
+        </FigmaLayer>
 
-        <p data-frame-reveal="description" className="max-w-[472px] text-[15px] leading-relaxed text-black/60">
+        <FigmaLayer
+          name="Passionate Software..."
+          icon="text"
+          as="p"
+          data-frame-reveal="description"
+          className="max-w-[472px] text-[15px] leading-relaxed text-black/60"
+        >
           Passionate Software Engineer. I’m your partner in crime for crafting scalable solution from your
           brand and products.
-        </p>
+        </FigmaLayer>
 
-        <div data-frame-reveal="actions">
+        <FigmaLayer name="Contact me" icon="component" data-frame-reveal="actions">
           <Button
             type="button"
             size="lg"
@@ -122,12 +134,14 @@ export default function Portfolio() {
           >
             Contact me
           </Button>
-        </div>
-      </div>
+        </FigmaLayer>
+      </FigmaLayer>
 
-      <div className="flex w-[537px] shrink-0 flex-col gap-4">
-        <div className="flex min-w-0 w-full flex-row flex-wrap items-start gap-4">
-          <div
+      <FigmaLayer name="Content" icon="frame" className="flex w-[537px] shrink-0 flex-col gap-4">
+        <FigmaLayer name="Row" icon="group" className="flex min-w-0 w-full flex-row flex-wrap items-start gap-4">
+          <FigmaLayer
+            name="profile.png"
+            icon="image"
             data-frame-reveal="media"
             className="relative size-[266px] shrink-0 overflow-hidden rounded-2xl bg-neutral-200"
           >
@@ -139,15 +153,13 @@ export default function Portfolio() {
               className="size-full object-cover"
               priority
             />
-          </div>
+          </FigmaLayer>
 
-          <div data-frame-reveal="terminal" className="flex min-h-0 min-w-0 flex-1">
-            <PortfolioTerminal />
-          </div>
-        </div>
+          <PortfolioTerminal />
+        </FigmaLayer>
 
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-stretch">
-          <div data-frame-reveal="tech-grid" className="flex shrink-0 flex-col gap-2">
+        <FigmaLayer name="Footer" icon="group" className="flex flex-col gap-4 sm:flex-row sm:items-stretch">
+          <FigmaLayer name="Tech stack" icon="group" data-frame-reveal="tech-grid" className="flex shrink-0 flex-col gap-2">
             <div className="flex flex-row gap-4">
               <TechIconTile src="/react.svg" label="React" />
               <TechIconTile src="/nextjs.svg" label="Next.js" />
@@ -158,9 +170,11 @@ export default function Portfolio() {
               <TechIconTile src="/tailwind.svg" label="Tailwind CSS" />
               <TechIconTile src="/turborepo.svg" label="Turborepo" />
             </div>
-          </div>
+          </FigmaLayer>
 
-          <div
+          <FigmaLayer
+            name="Employers"
+            icon="rectangle"
             data-frame-reveal="employers"
             className="flex min-h-[116px] min-w-0 flex-1 flex-col justify-center rounded-2xl bg-[linear-gradient(142deg,#000000_0%,#2c2b2b_100%)] px-4 py-4 sm:px-4"
           >
@@ -192,9 +206,9 @@ export default function Portfolio() {
                 />
               </div>
             </div>
-          </div>
-        </div>
-      </div>
+          </FigmaLayer>
+        </FigmaLayer>
+      </FigmaLayer>
     </section>
   );
 }

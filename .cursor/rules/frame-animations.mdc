@@ -63,3 +63,26 @@ Optional: `data-frame-dot` on status dots, `.frame-float` on logos after entranc
 - Interactive elements (`a`, `button`) must remain clickable inside the pannable canvas.
 - Add hover/active micro-interactions on buttons (`hover:scale-[1.03]`, `active:scale-[0.98]`).
 - Stagger top-to-bottom, left column before right column.
+
+## Selected project frames
+
+Use `SelectedProjectFrame` + data in `content/selected-projects.ts`. Canvas frames and layers panel are driven by `getCanvasFrames()` in `content/canvas-frames.tsx`.
+
+```tsx
+// content/selected-projects.ts
+export const myProject: SelectedProject = {
+  id: "my-app",
+  frameLabel: "Selected Project - 2",
+  ariaLabel: "Selected Project - My App",
+  badges: [{ label: "Selected Work #2", dotColor: "#7C4DFF", textColor: "#7C4DFF", backgroundColor: "rgba(97,85,245,0.1)" }],
+  title: "My App Title",
+  description: "Plain string or [{ type: 'text' | 'link', ... }] for inline links.",
+  techStack: "Tech Stack: Next.js, TypeScript",
+  demoUrl: "https://example.com",
+  githubUrl: "https://github.com/you/repo",
+  logo: { src: "/content/my-app/logo.svg", alt: "My App logo" },
+  screenshots: [{ src: "/content/my-app/image_1.png", width: 614, height: 379, alt: "Screenshot 1" }],
+};
+
+export const selectedProjects = [bliProject, myProject];
+```
