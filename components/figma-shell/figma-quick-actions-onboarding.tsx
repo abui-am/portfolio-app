@@ -106,7 +106,7 @@ export function FigmaQuickActionsOnboarding({ hidden = false }: FigmaQuickAction
             <kbd className="rounded border border-[#e6e6e6] bg-[#fafafa] px-1 py-px font-sans text-[10px] text-[#333]">
               {modKey}+K
             </kbd>{" "}
-            to download your CV, open projects, play mode, or get in touch.
+            to download my CV, open my portfolio, play mode, or get in touch.
           </p>
           <button
             type="button"
