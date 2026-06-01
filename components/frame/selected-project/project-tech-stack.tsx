@@ -1,5 +1,8 @@
+"use client";
+
 import Image from "next/image";
 import { FigmaLayer } from "@/components/figma-shell/figma-layer";
+import { useIsSiteView } from "@/components/site/site-view-context";
 import type { SelectedProjectTechItem } from "@/components/frame/selected-project/types";
 
 interface ProjectTechStackProps {
@@ -7,12 +10,14 @@ interface ProjectTechStackProps {
 }
 
 export function ProjectTechStack({ items }: ProjectTechStackProps) {
+  const isSite = useIsSiteView();
+
   return (
     <FigmaLayer
       name="Tech stack"
       icon="group"
       data-frame-reveal="tech"
-      className="flex w-[472px] flex-wrap items-center gap-x-1.5 gap-y-1 text-base leading-[22px] text-black/60"
+      className={`flex flex-wrap items-center gap-x-1.5 gap-y-1 text-base leading-[22px] text-black/60 ${isSite ? "w-full min-w-0" : "w-[472px]"}`}
     >
       <span className="shrink-0">Tech Stack:</span>
       {items.map((item, index) => (

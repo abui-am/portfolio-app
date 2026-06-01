@@ -16,6 +16,7 @@ import type {
   SelectedProjectFrameProps,
 } from "@/components/frame/selected-project/types";
 import { useFrameInView } from "@/components/frame/use-frame-in-view";
+import { useIsSiteView } from "@/components/site/site-view-context";
 import { FigmaLayer } from "@/components/figma-shell/figma-layer";
 
 const manrope = Manrope({
@@ -97,9 +98,168 @@ export function SelectedProjectFrame({
   children,
 }: SelectedProjectFrameProps) {
   const { ref, inView } = useFrameInView(0.15);
+  const isSite = useIsSiteView();
   const logoSize = project.logo.width ?? 261;
   const layout = SELECTED_PROJECT_LAYOUT;
   const frameHeight = getFrameHeight(project.screenshots);
+  const copyCol = isSite ? "w-full min-w-0 lg:max-w-[472px]" : "w-[472px]";
+
+  if (isSite) {
+    return (
+      <section
+        ref={ref}
+        className={`frame-animated ${inView ? "frame-in-view" : ""} ${manrope.variable} ${lora.variable} relative w-full border-t border-black/10 bg-transparent py-10 first:border-t-0 first:pt-0`}
+        style={{
+          fontFamily: "var(--font-portfolio-sans), ui-sans-serif, system-ui, sans-serif",
+        }}
+        aria-label={project.ariaLabel}
+      >
+        <FigmaLayer name="Hero" icon="frame" className="flex w-full flex-col items-start gap-8">
+          <FigmaLayer
+            name="Row"
+            icon="group"
+            className="flex w-full flex-col items-start gap-8 lg:flex-row lg:items-start lg:justify-between lg:gap-[124px]"
+          >
+            <FigmaLayer name="Copy" icon="frame" className={`flex ${copyCol} flex-col items-start gap-[13px]`}>
+              {project.badges.length > 0 ? (
+                <FigmaLayer name="Badges" icon="group" data-frame-reveal="badge" className="flex flex-row flex-wrap items-start gap-[13px]">
+                  {project.badges.map((badge) => (
+                    <FigmaLayer
+                      key={badge.label}
+                      name={badge.label}
+                      icon="frame"
+                      className="flex h-[38px] items-center justify-center gap-2.5 rounded-lg px-3 py-2"
+                      style={{ backgroundColor: badge.backgroundColor }}
+                    >
+                      {badge.icon ? (
+                        <ProjectBadgeIcon icon={badge.icon} color={badge.textColor} />
+                      ) : (
+                        <span
+                          data-frame-dot
+                          className="size-2 shrink-0 rounded-full"
+                          style={{ backgroundColor: badge.dotColor }}
+                          aria-hidden
+                        />
+                      )}
+                      <span
+                        className="text-base leading-[22px] font-bold"
+                        style={{ color: badge.textColor }}
+                      >
+                        {badge.label}
+                      </span>
+                    </FigmaLayer>
+                  ))}
+                </FigmaLayer>
+              ) : null}
+
+              <FigmaLayer
+                name={truncateLabel(project.title)}
+                icon="text"
+                as="h2"
+                data-frame-reveal="title"
+                className={`${copyCol} text-[clamp(1.75rem,4vw,2.5rem)] leading-[1.2] text-[#292524]`}
+                style={{
+                  fontFamily: "var(--font-portfolio-serif), ui-serif, Georgia, serif",
+                }}
+              >
+                {project.title}
+              </FigmaLayer>
+
+              {project.role ? (
+                <FigmaLayer
+                  name="Role"
+                  icon="text"
+                  as="p"
+                  data-frame-reveal="role"
+                  className={`${copyCol} text-base leading-[22px] text-black/60`}
+                >
+                  <span className="text-black/80">Role:</span> {project.role}
+                </FigmaLayer>
+              ) : null}
+
+              <FigmaLayer
+                name="Description"
+                icon="text"
+                as="p"
+                data-frame-reveal="description"
+                className={`${copyCol} text-base leading-[22px] text-black/60`}
+              >
+                <ProjectDescription description={project.description} />
+              </FigmaLayer>
+
+              <ProjectTechStack items={project.techStack} />
+
+              {project.demoUrl || project.githubUrl || project.githubBeUrl ? (
+                <FigmaLayer name="Actions" icon="group" data-frame-reveal="actions" className="flex flex-row flex-wrap items-start gap-[13px]">
+                  {project.demoUrl ? (
+                    <FigmaLayer name="Demo" icon="component" className="contents">
+                      <a
+                        href={project.demoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex h-[41px] items-center justify-center gap-1 rounded-full bg-black px-4 py-2 text-lg leading-[25px] text-white transition-[transform,background-color] duration-200 hover:scale-[1.03] hover:bg-neutral-900 active:scale-[0.98]"
+                      >
+                        <Globe className="size-6 shrink-0" aria-hidden />
+                        Demo
+                      </a>
+                    </FigmaLayer>
+                  ) : null}
+                  {project.githubUrl ? (
+                    <FigmaLayer name="Github" icon="component" className="contents">
+                      <a
+                        href={project.githubUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex h-[41px] items-center justify-center gap-1 rounded-full border border-black bg-white px-4 py-2 text-lg leading-[25px] text-black transition-[transform,background-color] duration-200 hover:scale-[1.03] hover:bg-neutral-50 active:scale-[0.98]"
+                      >
+                        <IconGithub className="size-6 shrink-0" />
+                        Github
+                      </a>
+                    </FigmaLayer>
+                  ) : null}
+                  {project.githubBeUrl ? (
+                    <FigmaLayer name="Github (BE)" icon="component" className="contents">
+                      <a
+                        href={project.githubBeUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex h-[41px] items-center justify-center gap-1 rounded-full border border-black bg-white px-4 py-2 text-lg leading-[25px] text-black transition-[transform,background-color] duration-200 hover:scale-[1.03] hover:bg-neutral-50 active:scale-[0.98]"
+                      >
+                        <IconGithub className="size-6 shrink-0" />
+                        Github (BE)
+                      </a>
+                    </FigmaLayer>
+                  ) : null}
+                </FigmaLayer>
+              ) : null}
+
+              {children}
+            </FigmaLayer>
+
+            <FigmaLayer
+              name={logoLayerName(project.logo.src)}
+              icon="image"
+              data-frame-reveal="logo"
+              className="shrink-0 self-center lg:self-start"
+            >
+              <div className="frame-float">
+                <Image
+                  src={project.logo.src}
+                  alt={project.logo.alt}
+                  width={logoSize}
+                  height={project.logo.height ?? logoSize}
+                  className="size-40 object-contain sm:size-52 lg:size-[261px]"
+                  unoptimized
+                />
+              </div>
+            </FigmaLayer>
+          </FigmaLayer>
+        </FigmaLayer>
+
+        <ProjectScreenshotCarousel screenshots={project.screenshots} ariaLabel={`${project.title} screenshots`} />
+      </section>
+    );
+  }
 
   return (
     <section

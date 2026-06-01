@@ -18,6 +18,8 @@ export interface ExperienceEntry {
   company: string;
   employment: string;
   period: string;
+  fundingRound?: string;
+  employeeRange?: string;
   location?: string;
   description?: string;
   features: ExperienceFeature[];
@@ -29,23 +31,26 @@ export interface ExperienceEntry {
   logo?: {
     src: string;
     alt: string;
+    width?: number;
+    height?: number;
+    className?: string;
   };
 }
 
 export const experienceEntries: ExperienceEntry[] = [
   {
-    role: "Apple Developer Academy @ BINUS, Bali",
-    company: "",
-    employment: "",
+    role: "Product Engineer",
+    company: "Apple Developer Academy @ BINUS, Bali",
+    employment: "Part-time",
     period: "Mar 2026 - Present",
     location: "Park23, Kuta, Bali",
     description:
-      "A 10-month, full-scholarship program by Apple and BINUS University—the first Apple Developer Academy in Asia open to international learners. Based at Park23 in Kuta, the academy uses Apple's challenge-based learning model to build real iOS apps with Swift while developing UI/UX design, user research, project management, and entrepreneurship skills in cross-functional teams.",
+      "I joined the academy to relearn how I build apps. Most of my career has been web front-ends; this is a deliberate turn toward iOS—Swift, design, and talking to users before writing code. Ten-month scholarship at Park23 with Apple and BINUS, working in small teams on challenge briefs that end in real apps.",
     features: [
-      { label: "10-month cohort", detail: "Full scholarship program" },
-      { label: "Challenge-based", detail: "Ship real iOS apps" },
-      { label: "Asia-first academy", detail: "International learners" },
-      { label: "T-shaped skills", detail: "Code, design, business" },
+      { label: "Why I'm here", detail: "Rethink my app habits" },
+      { label: "Weekly challenges", detail: "Brief → ship in Swift" },
+      { label: "10-month cohort", detail: "Scholarship · Park23" },
+      { label: "Team mix", detail: "Design, dev, research" },
     ],
     codePanel: {
       filename: "ChallengeApp.swift",
@@ -61,14 +66,25 @@ export const experienceEntries: ExperienceEntry[] = [
 // Swift · UI/UX · User Research`,
     },
     links: [{ label: "Visit academy", href: "https://developeracademy.apps.binus.ac.id/bali/" }],
+    logo: {
+      src: "/apple-developer-academy.png",
+      alt: "Apple Developer Academy @ BINUS logo",
+      width: 155,
+      height: 48,
+      className: "h-12 w-auto max-w-[155px] object-contain object-left",
+    },
     skills: ["iOS Development", "Project Management", "UI/UX Design", "User Research"],
-    highlights: [],
+    highlights: [
+      "Took a step back from shipping web features fast to ask harder questions: does this app need to exist, and is it good on a phone?",
+    ],
   },
   {
     role: "Frontend Engineer II",
     company: "Evermos",
     employment: "Full-time (Bandung)",
     period: "Jul 2025 - Mar 2026",
+    fundingRound: "Series C",
+    employeeRange: "500–1,000 employees",
     description:
       "Built and maintained front-end systems for Everpro, Evermos' logistics platform serving 30,000+ sellers with multi-carrier shipping, COD disbursement, and API integrations.",
     features: [
@@ -117,6 +133,8 @@ export const experienceEntries: ExperienceEntry[] = [
     company: "Dealls Jobs (YC W22)",
     employment: "Full-time (Remote)",
     period: "Dec 2022 - Jul 2025",
+    fundingRound: "Series Seed",
+    employeeRange: "50–200 employees",
     description:
       "Led front-end development for Dealls' job portal and KantorKu's all-in-one HRIS—platforms used by thousands of companies across Indonesia.",
     features: [

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import {
   ChevronDown,
@@ -181,18 +182,20 @@ function TopBar({
         <button
           type="button"
           onClick={onTogglePresentation}
-          className="hidden size-8 shrink-0 items-center justify-center rounded text-[#333] hover:bg-[#f5f5f5] md:flex"
-          aria-label="Enter presentation mode"
+          className="hidden h-7 shrink-0 items-center justify-center rounded-md border border-[#e6e6e6] bg-white px-2.5 text-[11px] font-medium text-[#333] hover:bg-[#f5f5f5] sm:px-3 sm:text-[12px] md:flex"
+          aria-label="Enter fullscreen"
         >
-          <Play className="size-[18px]" aria-hidden />
+          Fullscreen
         </button>
-        <button
-          type="button"
-          className="h-7 shrink-0 rounded-md px-2 text-[11px] font-semibold text-white sm:px-3 sm:text-[12px]"
+        <Link
+          href="/play"
+          className="inline-flex h-7 shrink-0 items-center justify-center gap-1.5 rounded-md px-2 text-[11px] font-semibold text-white transition-[transform,background-color] duration-200 hover:scale-[1.02] active:scale-[0.98] sm:px-3 sm:text-[12px]"
           style={{ backgroundColor: figmaBlue }}
+          aria-label="Open portfolio in play mode"
         >
-          Share
-        </button>
+          <Play className="size-4 shrink-0" aria-hidden />
+          Play
+        </Link>
         <div className="hidden md:block">
           <ZoomControls />
         </div>

@@ -16,6 +16,7 @@ import {
 import { experienceEntries } from "@/content/experience";
 import type { ExperienceEntry, ExperienceFeature } from "@/content/experience";
 import { useFrameInView } from "@/components/frame/use-frame-in-view";
+import { useIsSiteView } from "@/components/site/site-view-context";
 import { FigmaLayer } from "@/components/figma-shell/figma-layer";
 
 const manrope = Manrope({
@@ -77,7 +78,7 @@ function ExperienceSkillPills({ skills }: { skills: string[] }) {
 }
 
 function getFeatureIcons(entry: ExperienceEntry) {
-  if (entry.role.includes("Apple Developer Academy")) return featureIconSets.academy;
+  if (entry.company.includes("Apple Developer Academy")) return featureIconSets.academy;
   if (entry.company === "Evermos") return featureIconSets.evermos;
   if (entry.company.includes("Dealls")) return featureIconSets.dealls;
   return featureIconSets.academy;
@@ -85,28 +86,34 @@ function getFeatureIcons(entry: ExperienceEntry) {
 
 function ExperienceBlock({ entry, isPrimary }: { entry: ExperienceEntry; isPrimary: boolean }) {
   const icons = getFeatureIcons(entry);
+  const isSite = useIsSiteView();
+  const copyCol = isSite ? "w-full min-w-0 lg:max-w-[472px]" : "w-[472px]";
 
   return (
     <FigmaLayer
       name={entry.role}
       icon="frame"
-      className="flex w-[1184px] flex-row items-start justify-between gap-[124px] border-t border-black/10 pt-8 first:border-t-0 first:pt-0"
+      className={
+        isSite
+          ? "flex w-full min-w-0 flex-col items-start gap-8 border-t border-black/10 pt-8 first:border-t-0 first:pt-0 lg:flex-row lg:items-start lg:justify-between lg:gap-[124px]"
+          : "flex w-[1184px] flex-row items-start justify-between gap-[124px] border-t border-black/10 pt-8 first:border-t-0 first:pt-0"
+      }
     >
-      <FigmaLayer name="Copy" icon="frame" className="flex w-[472px] flex-col items-start gap-[13px]">
+      <FigmaLayer name="Copy" icon="frame" className={`flex ${copyCol} flex-col items-start gap-[13px]`}>
         {entry.logo ? (
           <Image
             src={entry.logo.src}
             alt={entry.logo.alt}
-            width={48}
-            height={48}
-            className="size-12 object-contain"
+            width={entry.logo.width ?? 48}
+            height={entry.logo.height ?? 48}
+            className={entry.logo.className ?? "size-12 object-contain"}
             unoptimized
           />
         ) : null}
 
         <h3
           data-frame-reveal={isPrimary ? "title" : undefined}
-          className={`w-[472px] ${isPrimary ? "text-[40px] leading-[51px]" : "text-[28px] leading-[36px]"}`}
+          className={`${copyCol} ${isPrimary ? "text-[40px] leading-[51px]" : "text-[28px] leading-[36px]"}`}
           style={{
             fontFamily: "var(--font-portfolio-serif), ui-serif, Georgia, serif",
             color: headline,
@@ -118,14 +125,20 @@ function ExperienceBlock({ entry, isPrimary }: { entry: ExperienceEntry; isPrima
         {entry.period ? (
           <p
             data-frame-reveal={isPrimary ? "role" : undefined}
-            className="w-[472px] text-base leading-[22px] font-medium text-black/80"
+            className={`${copyCol} text-base leading-[22px] font-medium text-black/80`}
           >
             <ExperienceMeta entry={entry} />
           </p>
         ) : null}
 
+        {entry.fundingRound || entry.employeeRange ? (
+          <p className={`${copyCol} text-base leading-[22px] text-black/60`}>
+            {[entry.fundingRound, entry.employeeRange].filter(Boolean).join(" · ")}
+          </p>
+        ) : null}
+
         {entry.location ? (
-          <p className="inline-flex w-[472px] items-center gap-2 text-base leading-[22px] text-black/60">
+          <p className={`inline-flex ${copyCol} items-center gap-2 text-base leading-[22px] text-black/60`}>
             <MapPin className="size-4 shrink-0" aria-hidden />
             {entry.location}
           </p>
@@ -134,7 +147,7 @@ function ExperienceBlock({ entry, isPrimary }: { entry: ExperienceEntry; isPrima
         {entry.description ? (
           <p
             data-frame-reveal={isPrimary ? "description" : "description"}
-            className="w-[472px] text-base leading-[22px] text-black/60"
+            className={`${copyCol} text-base leading-[22px] text-black/60`}
           >
             {entry.description}
           </p>
@@ -196,7 +209,11 @@ function ExperienceBlock({ entry, isPrimary }: { entry: ExperienceEntry; isPrima
         name="Key insights"
         icon="frame"
         data-frame-reveal="media"
-        className="w-[588px] shrink-0 overflow-hidden rounded-2xl bg-[linear-gradient(145deg,#151515_0%,#2a2a2a_100%)] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.18)]"
+        className={
+          isSite
+            ? "w-full min-w-0 shrink-0 overflow-hidden rounded-2xl bg-[linear-gradient(145deg,#151515_0%,#2a2a2a_100%)] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.18)] lg:max-w-[588px] lg:flex-1"
+            : "w-[588px] shrink-0 overflow-hidden rounded-2xl bg-[linear-gradient(145deg,#151515_0%,#2a2a2a_100%)] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.18)]"
+        }
       >
         <FigmaLayer
           name="Highlights"
@@ -239,34 +256,39 @@ function ExperienceBlock({ entry, isPrimary }: { entry: ExperienceEntry; isPrima
 
 export default function Experience() {
   const { ref, inView } = useFrameInView(0.15);
+  const isSite = useIsSiteView();
 
   return (
     <section
       ref={ref}
-      className={`frame-animated ${inView ? "frame-in-view" : ""} ${manrope.variable} ${lora.variable} box-border w-[1440px] bg-[#F8F8F8] px-[128px] py-10`}
+      className={`frame-animated ${inView ? "frame-in-view" : ""} ${manrope.variable} ${lora.variable} box-border ${
+        isSite ? "w-full bg-transparent px-0 py-0" : "w-[1440px] bg-[#F8F8F8] px-[128px] py-10"
+      }`}
       style={{
         fontFamily: "var(--font-portfolio-sans), ui-sans-serif, system-ui, sans-serif",
       }}
       aria-label="Latest Experience"
     >
       <FigmaLayer name="Latest Experience" icon="frame" className="flex w-full flex-col gap-8">
-        <FigmaLayer
-          name="Latest Experience badge"
-          icon="frame"
-          data-frame-reveal="badge"
-          className="inline-flex w-fit max-w-full items-center gap-2.5 rounded-lg py-2 pr-3 pl-3"
-          style={{ backgroundColor: accentMuted }}
-        >
-          <span
-            data-frame-dot
-            className="size-2 shrink-0 rounded-full"
-            style={{ backgroundColor: accent }}
-            aria-hidden
-          />
-          <span className="text-[11px] font-bold tracking-wide uppercase" style={{ color: accent }}>
-            Latest Experience
-          </span>
-        </FigmaLayer>
+        {!isSite ? (
+          <FigmaLayer
+            name="Latest Experience badge"
+            icon="frame"
+            data-frame-reveal="badge"
+            className="inline-flex w-fit max-w-full items-center gap-2.5 rounded-lg py-2 pr-3 pl-3"
+            style={{ backgroundColor: accentMuted }}
+          >
+            <span
+              data-frame-dot
+              className="size-2 shrink-0 rounded-full"
+              style={{ backgroundColor: accent }}
+              aria-hidden
+            />
+            <span className="text-[11px] font-bold tracking-wide uppercase" style={{ color: accent }}>
+              Latest Experience
+            </span>
+          </FigmaLayer>
+        ) : null}
 
         <FigmaLayer name="Work history" icon="group" className="flex flex-col gap-10">
           {experienceEntries.map((entry, index) => (
