@@ -15,8 +15,7 @@ import type { PortfolioEmployer } from "@/content/employers";
 import { FigmaLayer } from "@/components/figma-shell/figma-layer";
 import { buttonVariants } from "@/components/ui/button";
 
-const CV_PDF_HREF = "/Abuidillah%20Adjie%20Muliadi_CV_Updated.pdf";
-const CV_DOWNLOAD_NAME = "Abuidillah-Adjie-Muliadi-CV.pdf";
+import { CV_DOWNLOAD_NAME, CV_PDF_HREF } from "@/content/cv-download";
 
 const actionLinkClassName =
   "w-fit gap-2 transition-transform duration-200 hover:scale-[1.03] active:scale-[0.98]";

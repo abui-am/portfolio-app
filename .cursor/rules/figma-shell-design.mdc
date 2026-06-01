@@ -1,0 +1,38 @@
+---
+description: Figma shell UI chrome — match real Figma panels, not portfolio marketing styles
+globs: components/figma-shell/**/*
+alwaysApply: false
+---
+
+# Figma shell design direction
+
+The shell (`components/figma-shell/`) mimics **Figma desktop chrome**: top bar, left/right panels, canvas viewport, command palette. It is separate from **canvas frames** (`components/frame/`), which use the portfolio brand (#7c4dff, serif headlines, etc.).
+
+## Do
+
+- **Colors**: borders `#e6e6e6`, body `#333`, section labels `#7a7a7a`, muted `#b3b3b3`, panel fill `#fafafa`, canvas `#f5f5f5`, white panels.
+- **Accent blue** `#18a0fb` (`figmaBlue`): active tab underline, selected layer text, frame selection border only — not large gradient fills.
+- **Typography**: 11px semibold section labels, 12px panel body, 13px top bar; system sans-serif.
+- **Section pattern**: label row + `rounded-md border border-[#e6e6e6] bg-[#fafafa]` control row (see Page, Quick actions in `figma-app.tsx` RightPanel).
+- **Icons**: lucide `size-3.5` / `size-4`, color `#7a7a7a`.
+- **Hover**: `hover:bg-[#f5f5f5]` on shell controls; `transition-colors` only.
+- **Keyboard hints**: `kbd` with `border-[#e6e6e6] bg-white text-[10px] text-[#7a7a7a]` — same as command palette footer.
+- **Panel width**: 240px side panels; top bar 40px.
+
+## Don't
+
+- Portfolio purple `#7c4dff`, dark gradients, glow orbs, or pulsing shadows in shell chrome.
+- Marketing CTAs (large colored icon badges, `hover:scale`, animated box-shadow loops) in panels.
+- Reuse canvas frame patterns (`frame-animated`, `data-frame-reveal`, Manrope/Lora) inside the shell.
+
+## Discoverability without breaking chrome
+
+- **Right panel row**: identical to **Page** (gray label, `#fafafa` control, neutral `kbd`).
+- **First-visit onboarding**: Figma-style tip card on the canvas (`figma-quick-actions-onboarding.tsx`) — white card, dot-grid preview, `Got it` button in `figmaBlue`. Dismiss via **X** or **Got it**; persist with `localStorage` key `portfolio-figma-quick-actions-onboarding-dismissed`.
+- **Mobile FAB** (`figma-mobile-quick-actions-fab.tsx`): fixed bottom-right, `figmaBlue` circle + search icon, `lg:hidden`, opens command palette. Use `data-canvas-interactive`.
+
+## Reference files
+
+- Shell layout & tokens: `components/figma-shell/figma-app.tsx` (`border`, `figmaBlue`, `RightPanel`, `LeftPanel`, `TopBar`)
+- Command palette: `components/figma-shell/figma-command-palette.tsx`
+- Canvas frame brand & motion: `frame-animations.mdc`

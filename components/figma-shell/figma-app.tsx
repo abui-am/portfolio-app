@@ -24,6 +24,9 @@ import { FigmaLeftPanelLayers } from "@/components/figma-shell/figma-left-panel-
 import { FigmaFrameRoot } from "@/components/figma-shell/figma-layer";
 import { FigmaLayersProvider } from "@/components/figma-shell/figma-layers-context";
 import { getPrimaryCanvasFrames, getProjectCanvasFrames, PRIMARY_CANVAS_FRAME_ID } from "@/content/canvas-frames";
+import { FigmaCommandPalette, useFigmaCommandPaletteShortcut } from "@/components/figma-shell/figma-command-palette";
+import { FigmaMobileQuickActionsFab } from "@/components/figma-shell/figma-mobile-quick-actions-fab";
+import { FigmaQuickActionsOnboarding } from "@/components/figma-shell/figma-quick-actions-onboarding";
 import { useIsMobile } from "@/components/figma-shell/use-is-mobile";
 
 const TOP_BAR_PX = 40;
@@ -112,11 +115,20 @@ function TopBar({
         >
           <Home className="size-[18px]" aria-hidden />
         </button>
+        <button
+          type="button"
+          onClick={onToggleMobileLayers}
+          className="flex size-8 shrink-0 items-center justify-center rounded text-[#333] hover:bg-[#f5f5f5] lg:hidden"
+          aria-label={isMobileLayersOpen ? "Close layers panel" : "Open layers panel"}
+          aria-expanded={isMobileLayersOpen}
+        >
+          <Layers2 className="size-[18px]" aria-hidden />
+        </button>
         {isChromeHidden ? (
           <button
             type="button"
             onClick={onToggleChrome}
-            className="flex size-8 shrink-0 items-center justify-center rounded text-[#333] hover:bg-[#f5f5f5]"
+            className="hidden size-8 shrink-0 items-center justify-center rounded text-[#333] hover:bg-[#f5f5f5] lg:flex"
             aria-label="Show UI"
             title="Show UI (Ctrl+\)"
           >
@@ -124,15 +136,6 @@ function TopBar({
           </button>
         ) : (
           <>
-            <button
-              type="button"
-              onClick={onToggleMobileLayers}
-              className="flex size-8 shrink-0 items-center justify-center rounded text-[#333] hover:bg-[#f5f5f5] lg:hidden"
-              aria-label={isMobileLayersOpen ? "Close layers panel" : "Open layers panel"}
-              aria-expanded={isMobileLayersOpen}
-            >
-              <Layers2 className="size-[18px]" aria-hidden />
-            </button>
             <button
               type="button"
               className="hidden size-8 shrink-0 items-center justify-center rounded text-[#b3b3b3] hover:bg-[#f5f5f5] lg:flex"
@@ -236,10 +239,12 @@ function LeftPanel({
   onToggleChrome,
   onCloseMobile,
   isMobileOverlay,
+  onOpenCommandPalette,
 }: {
   onToggleChrome: () => void;
   onCloseMobile?: () => void;
   isMobileOverlay?: boolean;
+  onOpenCommandPalette: () => void;
 }) {
   return (
     <aside
@@ -281,7 +286,13 @@ function LeftPanel({
           <span className="text-[#333]">File</span>
           <span className="text-[#b3b3b3]">Assets</span>
         </div>
-        <button type="button" className="rounded p-1 text-[#7a7a7a] hover:bg-[#f5f5f5]" aria-label="Search">
+        <button
+          type="button"
+          onClick={onOpenCommandPalette}
+          className="rounded p-1 text-[#7a7a7a] hover:bg-[#f5f5f5]"
+          aria-label="Quick actions (Ctrl+K)"
+          title="Quick actions (Ctrl+K)"
+        >
           <Search className="size-4" aria-hidden />
         </button>
       </div>
@@ -309,7 +320,34 @@ function LeftPanel({
   );
 }
 
-function RightPanel() {
+function CommandPaletteHint({ onOpen }: { onOpen: () => void }) {
+  const [modKey, setModKey] = useState("Ctrl");
+
+  useEffect(() => {
+    setModKey(/Mac|iPhone|iPad/i.test(navigator.platform) ? "⌘" : "Ctrl");
+  }, []);
+
+  return (
+    <div className="mb-3">
+      <div className="mb-1.5 text-[11px] font-semibold text-[#7a7a7a]">Quick actions</div>
+      <button
+        type="button"
+        onClick={onOpen}
+        className={`flex w-full items-center gap-1.5 rounded-md border ${border} bg-[#fafafa] px-2 py-1.5 text-left transition-colors hover:bg-[#f5f5f5]`}
+        aria-label={`Open quick actions. ${modKey}+K.`}
+      >
+        <Search className="size-3.5 shrink-0 text-[#7a7a7a]" aria-hidden />
+        <span className="min-w-0 flex-1 text-[11px] text-[#333]">Search commands</span>
+        <kbd className="shrink-0 rounded border border-[#e6e6e6] bg-white px-1.5 py-0.5 font-sans text-[10px] tabular-nums text-[#7a7a7a]">
+          {modKey}+K
+        </kbd>
+      </button>
+      <p className="mt-1.5 text-[10px] leading-snug text-[#b3b3b3]">CV, projects, play mode, contact</p>
+    </div>
+  );
+}
+
+function RightPanel({ onOpenCommandPalette }: { onOpenCommandPalette: () => void }) {
   return (
     <aside className={`flex w-[240px] shrink-0 flex-col border-l ${border} bg-white`}>
       <div className={`flex border-b ${border} px-2`}>
@@ -325,6 +363,7 @@ function RightPanel() {
         </button>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto p-3 [scrollbar-width:thin]">
+        <CommandPaletteHint onOpen={onOpenCommandPalette} />
         <div className="mb-3">
           <div className="mb-1.5 text-[11px] font-semibold text-[#7a7a7a]">Page</div>
           <div className={`flex items-center gap-1.5 rounded-md border ${border} bg-[#fafafa] px-2 py-1.5`}>
@@ -434,13 +473,7 @@ function DummyCanvasFrame() {
   );
 }
 
-function PresentationOverlay({
-  onExit,
-  onHideToolbar,
-}: {
-  onExit: () => void;
-  onHideToolbar: () => void;
-}) {
+function PresentationOverlay({ onExit }: { onExit: () => void }) {
   return (
     <div className="pointer-events-none absolute inset-x-0 bottom-4 z-50 flex justify-center px-3 pb-[env(safe-area-inset-bottom)] sm:bottom-6 sm:px-0">
       <div className="pointer-events-auto flex max-w-full flex-wrap items-center justify-center gap-2 rounded-full border border-[#e6e6e6] bg-white/95 px-3 py-2 shadow-lg backdrop-blur-sm sm:gap-3 sm:px-4">
@@ -452,41 +485,8 @@ function PresentationOverlay({
           Exit presentation
         </button>
         <span className="text-[11px] text-[#7a7a7a]">Esc</span>
-        <button
-          type="button"
-          onClick={onHideToolbar}
-          className="rounded-full px-3 py-1.5 text-[12px] font-medium text-[#333] hover:bg-[#f5f5f5]"
-        >
-          Hide toolbar
-        </button>
         <ZoomControls compact floating />
       </div>
-    </div>
-  );
-}
-
-function PresentationToolbarReveal({
-  onShowToolbar,
-  onExit,
-}: {
-  onShowToolbar: () => void;
-  onExit: () => void;
-}) {
-  return (
-    <div
-      className="group absolute inset-x-0 bottom-0 z-50 flex h-14 items-end justify-center pb-3"
-      onMouseEnter={onShowToolbar}
-    >
-      <div className="pointer-events-none rounded-full bg-black/50 px-3 py-1 text-[11px] text-white opacity-0 transition-opacity group-hover:opacity-100">
-        Move cursor here to show toolbar · Esc to exit
-      </div>
-      <button
-        type="button"
-        onClick={onExit}
-        className="pointer-events-auto absolute bottom-3 right-3 rounded-md border border-[#e6e6e6] bg-white/95 px-2.5 py-1.5 text-[11px] font-medium text-[#333] opacity-0 shadow-md backdrop-blur-sm transition-opacity group-hover:opacity-100 hover:bg-white"
-      >
-        Exit
-      </button>
     </div>
   );
 }
@@ -495,8 +495,12 @@ function FigmaAppShell() {
   const isMobile = useIsMobile();
   const [isPresentationMode, setIsPresentationMode] = useState(false);
   const [isChromeHidden, setIsChromeHidden] = useState(false);
-  const [isPresentationToolbarHidden, setIsPresentationToolbarHidden] = useState(false);
   const [isMobileLayersOpen, setIsMobileLayersOpen] = useState(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+
+  const openCommandPalette = useCallback(() => {
+    setIsCommandPaletteOpen(true);
+  }, []);
 
   useEffect(() => {
     if (isMobile) {
@@ -524,7 +528,6 @@ function FigmaAppShell() {
 
   const exitPresentation = useCallback(async () => {
     setIsPresentationMode(false);
-    setIsPresentationToolbarHidden(false);
     setIsChromeHidden(false);
     if (document.fullscreenElement) {
       try {
@@ -538,7 +541,6 @@ function FigmaAppShell() {
   const enterPresentation = useCallback(async () => {
     setIsPresentationMode(true);
     setIsChromeHidden(true);
-    setIsPresentationToolbarHidden(false);
     try {
       await document.documentElement.requestFullscreen();
     } catch {
@@ -565,16 +567,15 @@ function FigmaAppShell() {
     return () => document.removeEventListener("fullscreenchange", onFullscreenChange);
   }, []);
 
+  useFigmaCommandPaletteShortcut(openCommandPalette);
+
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       const modKey = e.ctrlKey || e.metaKey;
 
       if (modKey && e.key === "\\") {
         e.preventDefault();
-        if (isPresentationMode) {
-          setIsPresentationToolbarHidden((prev) => !prev);
-          return;
-        }
+        if (isPresentationMode) return;
         setIsChromeHidden((prev) => !prev);
         return;
       }
@@ -590,8 +591,8 @@ function FigmaAppShell() {
   }, [exitPresentation, isPresentationMode]);
 
   const arePanelsHidden = isChromeHidden || isPresentationMode;
-  const showDesktopLeftPanel = !arePanelsHidden;
   const showMobileLayersDrawer = isMobile && isMobileLayersOpen && !isPresentationMode;
+  const showLeftPanel = !isPresentationMode && (!arePanelsHidden || showMobileLayersDrawer);
 
   return (
     <div
@@ -615,7 +616,7 @@ function FigmaAppShell() {
             onClick={closeMobileLayers}
           />
         ) : null}
-        {showDesktopLeftPanel ? (
+        {showLeftPanel ? (
           <div
             className={`${
               isMobile
@@ -629,26 +630,19 @@ function FigmaAppShell() {
               onToggleChrome={toggleChrome}
               onCloseMobile={closeMobileLayers}
               isMobileOverlay={isMobile}
+              onOpenCommandPalette={openCommandPalette}
             />
           </div>
         ) : null}
         <main className="relative flex min-h-0 min-w-0 flex-1 flex-col bg-[#f5f5f5]">
           <DummyCanvasFrame />
-          {isPresentationMode && !isPresentationToolbarHidden ? (
-            <PresentationOverlay
-              onExit={exitPresentation}
-              onHideToolbar={() => setIsPresentationToolbarHidden(true)}
-            />
-          ) : null}
-          {isPresentationMode && isPresentationToolbarHidden ? (
-            <PresentationToolbarReveal
-              onShowToolbar={() => setIsPresentationToolbarHidden(false)}
-              onExit={exitPresentation}
-            />
-          ) : null}
+          <FigmaQuickActionsOnboarding hidden={isPresentationMode} />
+          {isPresentationMode ? <PresentationOverlay onExit={exitPresentation} /> : null}
         </main>
-        {!arePanelsHidden ? <div className="hidden lg:contents"><RightPanel /></div> : null}
+        {!arePanelsHidden ? <div className="hidden lg:contents"><RightPanel onOpenCommandPalette={openCommandPalette} /></div> : null}
       </div>
+      <FigmaCommandPalette open={isCommandPaletteOpen} onOpenChange={setIsCommandPaletteOpen} />
+      <FigmaMobileQuickActionsFab onOpen={openCommandPalette} hidden={isPresentationMode} />
     </div>
   );
 }

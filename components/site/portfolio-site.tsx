@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Play } from "lucide-react";
+import { Edit, Play } from "lucide-react";
 import { PortfolioSiteProviders } from "@/components/site/portfolio-site-providers";
 import { SiteSection } from "@/components/site/site-section";
 import { getSiteSections } from "@/content/site-sections";
@@ -19,8 +19,8 @@ export function PortfolioSite() {
             className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-md px-3 text-[12px] font-semibold text-white transition-[transform,background-color] duration-200 hover:scale-[1.02] active:scale-[0.98]"
             style={{ backgroundColor: figmaBlue }}
           >
-            <Play className="size-4" aria-hidden />
-            Figma view
+            <Edit className="size-4" aria-hidden />
+            Editor View
           </Link>
         </div>
       </header>

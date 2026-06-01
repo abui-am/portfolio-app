@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import AboutMe from "@/components/frame/about-me";
 import Education from "@/components/frame/education";
 import Experience from "@/components/frame/experience";
 import GetInTouch from "@/components/frame/get-in-touch";
@@ -16,6 +17,7 @@ export const SELECTED_PROJECTS_SECTION_ID = "selected-projects";
 export function getSiteSections(): SiteSectionEntry[] {
   return [
     { id: "home", content: <Portfolio /> },
+    { id: "about-me", content: <AboutMe /> },
     { id: "experience", title: "Experience", content: <Experience /> },
     { id: "education", title: "Education", content: <Education /> },
     {
