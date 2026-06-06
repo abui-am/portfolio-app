@@ -22,7 +22,7 @@ export function AboutMeLayersPanel({ selectedId, onSelect }: AboutMeLayersPanelP
           <span className="flex size-4 shrink-0 items-center justify-center text-[#7a7a7a]">
             <FigmaLayerIconGlyph type="frame" />
           </span>
-          <span className="min-w-0 flex-1 truncate font-medium">About Me</span>
+          <span className="min-w-0 flex-1 truncate font-medium">Principles</span>
         </div>
 
         {aboutMeLayerTree.map((layer) => {
@@ -36,23 +36,20 @@ export function AboutMeLayersPanel({ selectedId, onSelect }: AboutMeLayersPanelP
             >
               <span className="size-4 shrink-0" aria-hidden />
               <div
-                className={`flex min-w-0 flex-1 items-center gap-0.5 rounded-sm py-[2px] pr-1.5 transition-colors duration-200 ${
-                  isSelected ? "bg-[#daebf7] font-medium" : ""
-                }`}
+                className={`flex min-w-0 flex-1 items-center gap-0.5 rounded-sm py-[2px] pr-1.5 transition-colors duration-200 ${isSelected ? "bg-[#daebf7] font-medium" : ""
+                  }`}
               >
                 <span
-                  className={`flex size-4 shrink-0 items-center justify-center transition-colors duration-200 ${
-                    isSelected ? "text-[#18a0fb]" : "text-[#7a7a7a]"
-                  }`}
+                  className={`flex size-4 shrink-0 items-center justify-center transition-colors duration-200 ${isSelected ? "text-[#18a0fb]" : "text-[#7a7a7a]"
+                    }`}
                 >
-                  <FigmaLayerIconGlyph type={layer.id === "framework" ? "group" : "text"} />
+                  <FigmaLayerIconGlyph type={layer.id === "iterate" ? "group" : "text"} />
                 </span>
                 <button
                   type="button"
                   onClick={() => onSelect(layer.id)}
-                  className={`min-w-0 flex-1 truncate text-left text-[11px] leading-4 transition-colors duration-200 ${
-                    isSelected ? "text-[#18a0fb]" : "text-[#333] hover:text-[#18a0fb]"
-                  }`}
+                  className={`min-w-0 flex-1 truncate text-left text-[11px] leading-4 transition-colors duration-200 ${isSelected ? "text-[#18a0fb]" : "text-[#333] hover:text-[#18a0fb]"
+                    }`}
                   aria-current={isSelected ? "true" : undefined}
                 >
                   {layer.label}

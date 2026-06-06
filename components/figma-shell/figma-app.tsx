@@ -6,7 +6,6 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Eye,
   Home,
   Layers2,
   Minus,
@@ -23,7 +22,14 @@ import { FigmaCanvasProvider, useCanvasScale, useFigmaCanvas, useSelectedLayerId
 import { FigmaLeftPanelLayers } from "@/components/figma-shell/figma-left-panel-layers";
 import { FigmaFrameRoot } from "@/components/figma-shell/figma-layer";
 import { FigmaLayersProvider } from "@/components/figma-shell/figma-layers-context";
-import { getPrimaryCanvasFrames, getProjectCanvasFrames, PRIMARY_CANVAS_FRAME_ID } from "@/content/canvas-frames";
+import {
+  canvasPages,
+  getCanvasPage,
+  getFramesForPage,
+  getPrimaryFramesForPage,
+  getProjectFramesForPage,
+  PORTFOLIO_PAGE_ID,
+} from "@/content/canvas-pages";
 import { FigmaCommandPalette, useFigmaCommandPaletteShortcut } from "@/components/figma-shell/figma-command-palette";
 import { FigmaMobileQuickActionsFab } from "@/components/figma-shell/figma-mobile-quick-actions-fab";
 import { FigmaQuickActionsOnboarding } from "@/components/figma-shell/figma-quick-actions-onboarding";
@@ -162,17 +168,6 @@ function TopBar({
             <X className="size-3.5" aria-hidden />
           </button>
         </div>
-        <div className="hidden h-7 shrink-0 items-center gap-1.5 rounded-md px-2 text-[13px] text-[#b3b3b3] shadow-[inset_0_0_0_1px_#e6e6e6] md:flex">
-          <FigmaMark className="size-3.5 shrink-0 opacity-60" />
-          <span className="max-w-[120px] truncate">Untitled</span>
-        </div>
-        <button
-          type="button"
-          className="hidden size-7 shrink-0 items-center justify-center rounded text-[#7a7a7a] hover:bg-[#f5f5f5] sm:flex"
-          aria-label="New tab"
-        >
-          <Plus className="size-4" aria-hidden />
-        </button>
       </div>
 
       <div className="flex shrink-0 items-center gap-0.5 pr-0.5 sm:gap-1 sm:pr-1">
@@ -224,9 +219,8 @@ function LayerRow({
   const pad = 8 + depth * 12;
   return (
     <div
-      className={`flex items-center gap-1 rounded py-0.5 pl-1 pr-1.5 text-[12px] leading-[18px] ${
-        active ? "bg-[#e8f3ff] font-medium text-[#18a0fb]" : "text-[#333]"
-      }`}
+      className={`flex items-center gap-1 rounded py-0.5 pl-1 pr-1.5 text-[12px] leading-[18px] ${active ? "bg-[#e8f3ff] font-medium text-[#18a0fb]" : "text-[#333]"
+        }`}
       style={{ paddingLeft: pad }}
     >
       <span className="flex size-4 shrink-0 items-center justify-center text-[#7a7a7a]">{icon}</span>
@@ -236,11 +230,15 @@ function LayerRow({
 }
 
 function LeftPanel({
+  activePageId,
+  onSelectPage,
   onToggleChrome,
   onCloseMobile,
   isMobileOverlay,
   onOpenCommandPalette,
 }: {
+  activePageId: string;
+  onSelectPage: (pageId: string) => void;
   onToggleChrome: () => void;
   onCloseMobile?: () => void;
   isMobileOverlay?: boolean;
@@ -248,9 +246,8 @@ function LeftPanel({
 }) {
   return (
     <aside
-      className={`flex h-full min-h-0 w-[240px] shrink-0 flex-col border-r ${border} bg-white ${
-        isMobileOverlay ? "shadow-xl" : ""
-      }`}
+      className={`flex h-full min-h-0 w-[240px] shrink-0 flex-col border-r ${border} bg-white ${isMobileOverlay ? "shadow-xl" : ""
+        }`}
     >
       <div className={`flex items-center gap-2 border-b ${border} px-3 py-2`}>
         <FigmaMark className="size-[22px] shrink-0" />
@@ -299,11 +296,20 @@ function LeftPanel({
       <div className={`shrink-0 border-b ${border} px-3 py-2`}>
         <div className="mb-2 flex items-center justify-between">
           <span className="text-[11px] font-semibold uppercase tracking-[0.02em] text-[#7a7a7a]">Pages</span>
-          <button type="button" className="rounded p-0.5 text-[#7a7a7a] hover:bg-[#f5f5f5]" aria-label="Add page">
-            <Plus className="size-3.5" aria-hidden />
-          </button>
         </div>
-        <div className="rounded bg-[#f0f0f0] px-2 py-1.5 text-[12px] font-medium text-[#333]">Page 1</div>
+        <div className="flex flex-col gap-0.5">
+          {canvasPages.map((page) => (
+            <button
+              key={page.id}
+              type="button"
+              onClick={() => onSelectPage(page.id)}
+              className={`rounded px-2 py-1.5 text-left text-[12px] font-medium transition-colors ${activePageId === page.id ? "bg-[#f0f0f0] text-[#333]" : "text-[#333] hover:bg-[#f5f5f5]"
+                }`}
+            >
+              {page.label}
+            </button>
+          ))}
+        </div>
       </div>
       <div className="flex min-h-0 flex-1 flex-col px-2 py-2">
         <div className="mb-1 flex shrink-0 items-center justify-between px-1">
@@ -364,34 +370,12 @@ function RightPanel({ onOpenCommandPalette }: { onOpenCommandPalette: () => void
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto p-3 [scrollbar-width:thin]">
         <CommandPaletteHint onOpen={onOpenCommandPalette} />
-        <div className="mb-3">
-          <div className="mb-1.5 text-[11px] font-semibold text-[#7a7a7a]">Page</div>
-          <div className={`flex items-center gap-1.5 rounded-md border ${border} bg-[#fafafa] px-2 py-1.5`}>
-            <span className="size-5 shrink-0 rounded border border-[#e6e6e6] bg-[#f5f5f5]" aria-hidden />
-            <span className="min-w-0 flex-1 font-mono text-[11px] text-[#333]">#F5F5F5</span>
-            <span className="shrink-0 text-[11px] text-[#7a7a7a]">100%</span>
-            <button type="button" className="shrink-0 text-[#b3b3b3] hover:text-[#333]" aria-label="Remove">
-              <Minus className="size-4" aria-hidden />
-            </button>
-            <button type="button" className="shrink-0 text-[#b3b3b3] hover:text-[#333]" aria-label="Visibility">
-              <Eye className="size-4" aria-hidden />
-            </button>
-          </div>
-        </div>
-        <div className={`mb-1 flex items-center justify-between border-t border-[#f0f0f0] pt-2`}>
+        <div className={`flex items-center justify-between border-t border-[#f0f0f0] pt-2`}>
           <span className="text-[12px] font-medium text-[#333]">Variables</span>
           <button type="button" className="rounded p-0.5 text-[#7a7a7a] hover:bg-[#f5f5f5]" aria-label="Variables settings">
             <SlidersVertical className="size-3.5" aria-hidden />
           </button>
         </div>
-        {["Styles", "Export"].map((label) => (
-          <div key={label} className="flex items-center justify-between py-2">
-            <span className="text-[12px] font-medium text-[#333]">{label}</span>
-            <button type="button" className="rounded p-0.5 text-[#7a7a7a] hover:bg-[#f5f5f5]" aria-label={`Add ${label}`}>
-              <Plus className="size-3.5" aria-hidden />
-            </button>
-          </div>
-        ))}
       </div>
     </aside>
   );
@@ -423,19 +407,17 @@ function CanvasFrame({
           data-figma-frame-label
           onClick={() => focusLayer(id)}
           onPointerDown={(e) => e.stopPropagation()}
-          className={`cursor-pointer text-[11px] leading-4 font-medium transition-colors ${
-            isHighlighted ? "text-[#18a0fb]" : "text-[#7a7a7a] hover:text-[#18a0fb]"
-          }`}
+          className={`cursor-pointer text-[11px] leading-4 font-medium transition-colors ${isHighlighted ? "text-[#18a0fb]" : "text-[#7a7a7a] hover:text-[#18a0fb]"
+            }`}
         >
           {label}
         </button>
       </div>
       <div
-        className={`relative overflow-hidden rounded-sm border-2 bg-white shadow-[0_1px_4px_rgba(0,0,0,0.08)] ${
-          isHighlighted
+        className={`relative overflow-hidden rounded-sm border-2 bg-white shadow-[0_1px_4px_rgba(0,0,0,0.08)] ${isHighlighted
             ? "border-[#18a0fb] shadow-[0_0_0_1px_#18a0fb,inset_0_0_0_1px_rgba(24,160,251,0.3)]"
             : "border-[#c7c7c7]"
-        }`}
+          }`}
       >
         <FigmaFrameRoot frameId={id} label={label} active={isHighlighted}>
           <div className="relative z-0 touch-auto cursor-auto select-text [touch-action:auto] [&_a]:relative [&_a]:z-20 [&_a]:cursor-pointer [&_button]:relative [&_button]:z-20 [&_button]:cursor-pointer [&_h1]:cursor-text [&_h2]:cursor-text [&_p]:cursor-text [&_pre]:cursor-text">
@@ -447,12 +429,29 @@ function CanvasFrame({
   );
 }
 
-function DummyCanvasFrame() {
-  const primaryFrames = getPrimaryCanvasFrames();
-  const projectFrames = getProjectCanvasFrames();
+function DummyCanvasFrame({ pageId }: { pageId: string }) {
+  const page = getCanvasPage(pageId);
+  const primaryFrames = getPrimaryFramesForPage(pageId);
+  const projectFrames = getProjectFramesForPage(pageId);
+
+  if (page.layout === "single") {
+    const frames = getFramesForPage(pageId);
+
+    return (
+      <PannableCanvasViewport key={pageId} initialFrameId={page.initialFrameId}>
+        <div className="flex shrink-0 flex-col gap-12">
+          {frames.map((frame) => (
+            <CanvasFrame key={frame.id} id={frame.id} label={frame.label} active={frame.active}>
+              {frame.content}
+            </CanvasFrame>
+          ))}
+        </div>
+      </PannableCanvasViewport>
+    );
+  }
 
   return (
-    <PannableCanvasViewport initialFrameId={PRIMARY_CANVAS_FRAME_ID}>
+    <PannableCanvasViewport key={pageId} initialFrameId={page.initialFrameId}>
       <div className="grid shrink-0 grid-cols-2 items-start gap-12">
         <div className="flex flex-col gap-12">
           {primaryFrames.map((frame) => (
@@ -493,6 +492,7 @@ function PresentationOverlay({ onExit }: { onExit: () => void }) {
 
 function FigmaAppShell() {
   const isMobile = useIsMobile();
+  const [activePageId, setActivePageId] = useState(PORTFOLIO_PAGE_ID);
   const [isPresentationMode, setIsPresentationMode] = useState(false);
   const [isChromeHidden, setIsChromeHidden] = useState(false);
   const [isMobileLayersOpen, setIsMobileLayersOpen] = useState(false);
@@ -500,6 +500,11 @@ function FigmaAppShell() {
 
   const openCommandPalette = useCallback(() => {
     setIsCommandPaletteOpen(true);
+  }, []);
+
+  const handleSelectPage = useCallback((pageId: string) => {
+    setActivePageId(pageId);
+    setIsMobileLayersOpen(false);
   }, []);
 
   useEffect(() => {
@@ -618,15 +623,15 @@ function FigmaAppShell() {
         ) : null}
         {showLeftPanel ? (
           <div
-            className={`${
-              isMobile
-                ? `fixed inset-y-0 left-0 z-50 h-full min-h-0 transition-transform duration-200 ease-out ${
-                    isMobileLayersOpen ? "translate-x-0" : "-translate-x-full pointer-events-none"
-                  }`
+            className={`${isMobile
+                ? `fixed inset-y-0 left-0 z-50 h-full min-h-0 transition-transform duration-200 ease-out ${isMobileLayersOpen ? "translate-x-0" : "-translate-x-full pointer-events-none"
+                }`
                 : "flex h-full min-h-0"
-            } lg:pointer-events-auto lg:static lg:flex lg:h-full lg:min-h-0 lg:translate-x-0`}
+              } lg:pointer-events-auto lg:static lg:flex lg:h-full lg:min-h-0 lg:translate-x-0`}
           >
             <LeftPanel
+              activePageId={activePageId}
+              onSelectPage={handleSelectPage}
               onToggleChrome={toggleChrome}
               onCloseMobile={closeMobileLayers}
               isMobileOverlay={isMobile}
@@ -635,7 +640,7 @@ function FigmaAppShell() {
           </div>
         ) : null}
         <main className="relative flex min-h-0 min-w-0 flex-1 flex-col bg-[#f5f5f5]">
-          <DummyCanvasFrame />
+          <DummyCanvasFrame pageId={activePageId} />
           <FigmaQuickActionsOnboarding hidden={isPresentationMode} />
           {isPresentationMode ? <PresentationOverlay onExit={exitPresentation} /> : null}
         </main>

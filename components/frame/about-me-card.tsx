@@ -115,7 +115,21 @@ export function AboutMeInteractiveCard() {
               </div>
 
               <div className="mt-auto">
-                <p className="mb-2 text-[9px] font-semibold tracking-[0.14em] text-white/35 uppercase">Building</p>
+                <p className="mb-2 text-[9px] font-semibold tracking-[0.14em] text-white/35 uppercase">Interest</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {aboutMeOs.interest.map((interest) => (
+                    <span
+                      key={interest}
+                      className="about-os-pill rounded-full border border-[#7c4dff]/25 bg-[#7c4dff]/10 px-2.5 py-1 font-mono text-[10px] font-medium text-[#c4b5ff]"
+                    >
+                      {interest}
+                    </span>
+                  ))}
+                </div>
+
+              </div>
+              <div className="mt-auto">
+                <p className="mb-2 text-[9px] font-semibold tracking-[0.14em] text-white/35 uppercase">Currently Building</p>
                 <div className="flex flex-wrap gap-1.5">
                   {aboutMeOs.building.map((project) => (
                     <span

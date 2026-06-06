@@ -14,6 +14,7 @@ import { portfolioEmployers } from "@/content/employers";
 import type { PortfolioEmployer } from "@/content/employers";
 import { FigmaLayer } from "@/components/figma-shell/figma-layer";
 import { buttonVariants } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 import { CV_DOWNLOAD_NAME, CV_PDF_HREF } from "@/content/cv-download";
 
@@ -42,9 +43,15 @@ interface TechIconTileProps {
 function TechIconTile(props: TechIconTileProps) {
   const { src, label } = props;
   return (
-    <div className="flex size-[54px] shrink-0 items-center justify-center rounded-2xl bg-white transition-transform duration-200 hover:scale-105">
-      <Image src={src} alt={label} width={32} height={32} className="size-8 object-contain" unoptimized />
-    </div>
+    <Tooltip>
+      <TooltipTrigger
+        aria-label={label}
+        className="flex size-[54px] shrink-0 cursor-default items-center justify-center rounded-2xl border-0 bg-white p-0 transition-transform duration-200 hover:scale-105"
+      >
+        <Image src={src} alt="" width={32} height={32} className="size-8 object-contain" aria-hidden unoptimized />
+      </TooltipTrigger>
+      <TooltipContent side="top">{label}</TooltipContent>
+    </Tooltip>
   );
 }
 
@@ -52,22 +59,38 @@ function EmployerCard({ employer }: { employer: PortfolioEmployer }) {
   const { href, src, label, width = 48, height = 48, imageClassName = "size-12 object-contain" } = employer;
 
   return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label={label}
-      className="inline-flex shrink-0 transition-opacity duration-200 hover:opacity-80"
-    >
-      <Image
-        src={src}
-        alt={label}
-        width={width}
-        height={height}
-        className={imageClassName}
-        unoptimized
-      />
-    </a>
+    <TooltipProvider>
+
+      <Tooltip
+        aria-label={label}
+      >
+        <TooltipContent side="top">{label}</TooltipContent>
+        <TooltipTrigger
+          aria-label={label}
+          className="inline-flex shrink-0 transition-opacity duration-200 hover:opacity-80"
+        >
+
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={label}
+            className="inline-flex shrink-0 transition-opacity duration-200 hover:opacity-80"
+          >
+            <Image
+              src={src}
+              alt={label}
+              width={width}
+              height={height}
+              className={imageClassName}
+              unoptimized
+            />
+          </a>
+        </TooltipTrigger>
+
+      </Tooltip>
+    </TooltipProvider>
+
   );
 }
 
@@ -165,11 +188,10 @@ export default function Portfolio() {
   return (
     <section
       ref={ref}
-      className={`frame-animated ${inView ? "frame-in-view" : ""} ${manrope.variable} ${lora.variable} box-border flex min-h-0 ${
-        isSite
-          ? "w-full flex-col gap-8 bg-transparent px-0 py-0 lg:min-h-[480px] lg:flex-row lg:items-start lg:justify-center lg:gap-x-[124px]"
-          : "min-h-[480px] w-[1440px] flex-row items-start justify-center gap-x-[124px] bg-[#F8F8F8] px-[128px] py-10"
-      }`}
+      className={`frame-animated ${inView ? "frame-in-view" : ""} ${manrope.variable} ${lora.variable} box-border flex min-h-0 ${isSite
+        ? "w-full flex-col gap-8 bg-transparent px-0 py-0 lg:min-h-[480px] lg:flex-row lg:items-start lg:justify-center lg:gap-x-[124px]"
+        : "min-h-[480px] w-[1440px] flex-row items-start justify-center gap-x-[124px] bg-[#F8F8F8] px-[128px] py-10"
+        }`}
       style={{
         fontFamily: "var(--font-portfolio-sans), ui-sans-serif, system-ui, sans-serif",
       }}
@@ -226,7 +248,7 @@ export default function Portfolio() {
           data-frame-reveal="description"
           className="max-w-[472px] text-[15px] leading-relaxed text-black/60"
         >
-          Passionate Software Engineer. I’m your partner in crime for crafting scalable solutions from your
+          Passionate Software Engineer. Shipped more than 20+ projects, I’m your partner in crime for crafting scalable solutions from your
           brand and products.
         </FigmaLayer>
 
@@ -237,7 +259,7 @@ export default function Portfolio() {
           data-frame-reveal="tech"
           className="max-w-[472px] text-[15px] leading-relaxed text-black/60"
         >
-          Highly skilled with Reactjs and Typescript, I’ll build what you envision.
+          Expert in Frontend Development, and have a strong foundation in UI/UX Design and Backend Development. I’ll build what you envision.
         </FigmaLayer>
 
         <FigmaLayer

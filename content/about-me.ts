@@ -1,4 +1,4 @@
-export type AboutLayerId = "curious" | "reflective" | "experimental" | "kaizen" | "framework";
+export type AboutLayerId = "explore" | "experiment" | "reflect" | "iterate";
 
 export interface AboutLayerNode {
   id: AboutLayerId;
@@ -12,10 +12,25 @@ export interface AboutTraitContent {
   evidence: string[];
 }
 
+export interface AboutTimelineLink {
+  label: string;
+  href: string;
+}
+
 export interface AboutTimelineEntry {
   year: string;
   title: string;
   detail: string;
+  kind?: "work" | "education";
+  gpa?: string;
+  logo?: {
+    src: string;
+    alt: string;
+    width?: number;
+    height?: number;
+    className?: string;
+  };
+  links?: AboutTimelineLink[];
 }
 
 export interface AboutPrincipleStep {
@@ -23,77 +38,83 @@ export interface AboutPrincipleStep {
   detail: string;
 }
 
-export const aboutMeHeadline = "About Me";
+export const aboutMeHeadline = "How it all started...";
 
 export const aboutMeStory = {
-  lead: "I'm a frontend engineer with about five years in. I like poking at how things work, trying ideas, and cleaning up what bothered me last sprint. Mostly React and TypeScript.",
+  lead: `Growing up, I always had this question in my mind: how do things work? This curiosity began to grow into a passion for understanding how things work, and how to make them work better.
+    Growing in a poor family is not easy, but I was able to graduate from university with a good GPA. Paid my own way through university by working a full-time career as a Software Engineer.
+  `
 } as const;
 
 export const aboutMeOs = {
-  edition: "Kaizen OS v1.0",
+  edition: "Engineer's Profile v1.0",
   role: "Frontend Engineer",
   experience: "5+ years",
   stack: "React · TypeScript",
+  interest: ["Web Development", "AI", "Product Development", "User Experience", "User Research"] as const,
   building: ["Bli", "KochAI", "GitGud"] as const,
   status: "Active",
 } as const;
 
 export const aboutMeLayerTree: AboutLayerNode[] = [
-  { id: "curious", label: "Explore latest emerging technology" },
-  { id: "reflective", label: "Reflection" },
-  { id: "experimental", label: "Experimentation" },
-  { id: "kaizen", label: "Kaizen" },
-  { id: "framework", label: "Principles" },
+  { id: "explore", label: "Explore" },
+  { id: "experiment", label: "Experiment" },
+  { id: "reflect", label: "Reflect" },
+  { id: "iterate", label: "Iterate" },
 ];
 
 /** Default layer when the inspector opens. */
-export const aboutMeDefaultLayerId: AboutLayerId = "curious";
+export const aboutMeDefaultLayerId: AboutLayerId = "explore";
 
 /** All layers rendered in the properties inspector (stacked for stable height). */
 export const aboutMeInspectableLayerIds: AboutLayerId[] = aboutMeLayerTree.map((layer) => layer.id);
 
 export const aboutMeTraits: AboutTraitContent[] = [
   {
-    id: "curious",
-    name: "Explore latest emerging technology",
-    description: "I keep an eye on what's new and try it before it becomes the default stack.",
+    id: "explore",
+    name: "Explore",
+    description:
+      "Technology changes fast. I stay curious by learning through building, not by watching from the sidelines.",
     evidence: [
-      "Joined Apple Developer Academy to learn iOS and native patterns hands-on.",
-      "Side projects with RAG and fine-tuning when AI tooling moves fast.",
-      "Built this Figma-style portfolio on Next.js 16 and modern React patterns.",
+      "Joined Apple Developer Academy to learn native development firsthand.",
+      "Built projects with RAG and LLM fine-tuning while AI tooling evolved rapidly.",
+      "Experimented with modern React and Next.js patterns through personal projects.",
     ],
   },
+
   {
-    id: "reflective",
-    name: "Reflective",
-    description: "I'll do a retro after a messy release instead of pretending it went fine.",
+    id: "experiment",
+    name: "Experiment",
+    description:
+      "I prefer small prototypes over long debates. Working software creates better discussions than slide decks.",
     evidence: [
-      "KochAI thesis: cited real papers so answers were not made up.",
-      "Facilitator at Binar Academy: React, Next.js, SSR, tests.",
-      "Post-release retros on what broke and why.",
-      "Code reviews that ask what to do differently next time.",
+      "Built Bli during a hackathon in hours instead of weeks.",
+      "Created GitGud as a weekend experiment to improve commit workflows.",
+      "Validate ideas through prototypes before proposing larger investments.",
     ],
   },
+
   {
-    id: "experimental",
-    name: "Experimental",
-    description: "I'd rather try a small spike than debate it in a meeting for a week.",
+    id: "reflect",
+    name: "Reflect",
+    description:
+      "Every release teaches something. I treat mistakes and successes as feedback loops for better decisions.",
     evidence: [
-      "Evermos: moved chunks of Vue to React without stopping the business.",
-      "Bli shipped at a hackathon in hours, not a quarter.",
-      "GitGud started as a weekend spike for better commit messages.",
-      "Prototypes on a branch before pitching to the team.",
+      "Conduct post-release retrospectives to identify root causes.",
+      "Emphasized evidence-based answers in KochAI through research-backed sources.",
+      "Use code reviews to discuss improvements, not just correctness.",
     ],
   },
+
   {
-    id: "kaizen",
-    name: "Kaizen",
-    description: "Big rewrites scare me. Steady patches don't.",
+    id: "iterate",
+    name: "Iterate",
+    description:
+      "Sustainable progress comes from continuous improvement, not massive rewrites.",
     evidence: [
-      "Everpro: oxlint, Clarity, small perf wins that added up.",
-      "This portfolio is probably version four. There will be a fifth.",
-      "Weekly fixes beat waiting months for one big launch.",
-      "Refactor the hot path, not the whole repo at once.",
+      "Introduced incremental improvements at Everpro through tooling and performance optimizations.",
+      "Migrated systems gradually without disrupting business operations.",
+      "Continuously refine personal projects instead of treating them as finished products.",
     ],
   },
 ];
@@ -117,32 +138,58 @@ export const aboutMePrinciples: AboutPrincipleStep[] = [
   },
 ];
 
-/** Key milestones from CV, newest first */
+/** Key milestones from CV and education, newest first */
 export const aboutMeTimeline: AboutTimelineEntry[] = [
   {
     year: "2026",
-    title: "Product Engineer",
+    title: "Working as a Product Engineer",
     detail: "Apple Developer Academy, Bali",
+    kind: "work",
+  },
+  {
+    year: "2026",
+    title: "Graduate of Computer Science",
+    detail: "Telkom University",
+    kind: "education",
+    gpa: "3.88",
+    logo: {
+      src: "/telkom-university.png",
+      alt: "Telkom University logo",
+      width: 40,
+      height: 48,
+      className: "h-8 w-auto max-w-[32px] object-contain object-left",
+    },
+    links: [{ label: "Visit university", href: "https://telkomuniversity.ac.id/" }],
   },
   {
     year: "2025",
-    title: "Frontend Engineer II",
+    title: "Working as a Frontend Engineer II",
     detail: "Evermos · Everpro",
+    kind: "work",
   },
   {
     year: "2022",
-    title: "Senior Frontend Engineer",
+    title: "Working as a Senior Frontend Engineer",
     detail: "Dealls · job board & HRIS",
+    kind: "work",
   },
   {
     year: "2021",
-    title: "Frontend Engineer",
+    title: "Working as a Frontend Engineer",
     detail: "EKRUT",
+    kind: "work",
+  },
+  {
+    year: "2020",
+    title: "Graduate of Software Engineering",
+    detail: "SMKN 1 Cimahi",
+    kind: "education",
   },
   {
     year: "2019",
-    title: "Web Developer Intern",
+    title: "Working as a Web Developer Intern",
     detail: "Svara",
+    kind: "work",
   },
 ];
 

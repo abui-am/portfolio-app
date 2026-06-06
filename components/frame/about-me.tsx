@@ -37,11 +37,10 @@ export default function AboutMe() {
   return (
     <section
       ref={ref}
-      className={`frame-animated ${inView ? "frame-in-view" : ""} ${manrope.variable} ${lora.variable} box-border ${
-        isSite
-          ? "flex w-full flex-col bg-transparent px-0 py-0"
-          : "w-[1440px] bg-[#F8F8F8] px-[128px] py-10"
-      }`}
+      className={`frame-animated ${inView ? "frame-in-view" : ""} ${manrope.variable} ${lora.variable} box-border ${isSite
+        ? "flex w-full flex-col bg-transparent px-0 py-0"
+        : "w-[1440px] bg-[#F8F8F8] px-[128px] py-10"
+        }`}
       style={{
         fontFamily: "var(--font-portfolio-sans), ui-sans-serif, system-ui, sans-serif",
       }}
@@ -62,7 +61,7 @@ export default function AboutMe() {
           >
             <User className="size-3.5 shrink-0" style={{ color: accent }} aria-hidden />
             <span className="text-[11px] font-bold tracking-wide uppercase" style={{ color: accent }}>
-              About
+              About Me
             </span>
           </FigmaLayer>
         ) : null}
@@ -76,23 +75,6 @@ export default function AboutMe() {
               : "flex w-[1184px] flex-row items-start justify-between gap-[124px]"
           }
         >
-          <FigmaLayer name="Visual" icon="frame" className={`flex ${visualCol} flex-col gap-4`}>
-            <FigmaLayer name="Kaizen OS card" icon="frame" data-frame-reveal="logo" className="w-full">
-              <div className="frame-float w-full">
-                <AboutMeInteractiveCard />
-              </div>
-            </FigmaLayer>
-
-            <FigmaLayer name="Timeline" icon="frame" data-frame-reveal="tech-grid" className="w-full">
-              <AboutMeTimeline />
-            </FigmaLayer>
-
-            {isSite ? (
-              <FigmaLayer name="Layers mobile" icon="frame" data-frame-reveal="terminal" className="w-full lg:hidden">
-                <AboutMeLayersPanel selectedId={selectedLayerId} onSelect={setSelectedLayerId} />
-              </FigmaLayer>
-            ) : null}
-          </FigmaLayer>
 
           <FigmaLayer
             name="About copy"
@@ -112,7 +94,7 @@ export default function AboutMe() {
 
             <p
               data-frame-reveal="description"
-              className={`${copyCol} text-[15px] leading-relaxed text-black/60`}
+              className={`${copyCol} text-[15px] leading-relaxed text-black/60 whitespace-pre-line`}
             >
               {aboutMeStory.lead}
             </p>
@@ -132,6 +114,24 @@ export default function AboutMe() {
               <AboutMePropertiesPanel selectedId={selectedLayerId} />
             </FigmaLayer>
           </FigmaLayer>
+          <FigmaLayer name="Visual" icon="frame" className={`flex ${visualCol} flex-col gap-4`}>
+            <FigmaLayer name="Kaizen OS card" icon="frame" data-frame-reveal="logo" className="w-full">
+              <div className="frame-float w-full">
+                <AboutMeInteractiveCard />
+              </div>
+            </FigmaLayer>
+
+            <FigmaLayer name="Timeline" icon="frame" data-frame-reveal="tech-grid" className="w-full">
+              <AboutMeTimeline />
+            </FigmaLayer>
+
+            {isSite ? (
+              <FigmaLayer name="Layers mobile" icon="frame" data-frame-reveal="terminal" className="w-full lg:hidden">
+                <AboutMeLayersPanel selectedId={selectedLayerId} onSelect={setSelectedLayerId} />
+              </FigmaLayer>
+            ) : null}
+          </FigmaLayer>
+
         </FigmaLayer>
       </FigmaLayer>
     </section>

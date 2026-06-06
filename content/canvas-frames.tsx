@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import AboutMe from "@/components/frame/about-me";
-import Education from "@/components/frame/education";
+import DesignSystem from "@/components/frame/design-system";
 import Experience from "@/components/frame/experience";
 import GetInTouch from "@/components/frame/get-in-touch";
 import Portfolio from "@/components/frame/portfolio";
@@ -19,22 +19,25 @@ export interface CanvasFrameEntry {
 export const PRIMARY_CANVAS_FRAME_ID = "desktop-1";
 export const ABOUT_ME_FRAME_ID = "about-me";
 export const EXPERIENCE_FRAME_ID = "experience";
-export const EDUCATION_FRAME_ID = "education";
 export const GET_IN_TOUCH_FRAME_ID = "get-in-touch";
+export const DESIGN_SYSTEM_FRAME_ID = "design-system";
 
 const PRIMARY_FRAME_IDS = new Set([
   PRIMARY_CANVAS_FRAME_ID,
   ABOUT_ME_FRAME_ID,
   EXPERIENCE_FRAME_ID,
-  EDUCATION_FRAME_ID,
   GET_IN_TOUCH_FRAME_ID,
+]);
+
+export const DESIGN_SYSTEM_FRAME_IDS = new Set([
+  DESIGN_SYSTEM_FRAME_ID,
 ]);
 
 export function getCanvasFrames(): CanvasFrameEntry[] {
   return [
     {
       id: PRIMARY_CANVAS_FRAME_ID,
-      label: "Home",
+      label: "Introduction",
       sectionTitle: "Home",
       content: <Portfolio />,
       active: true,
@@ -52,10 +55,10 @@ export function getCanvasFrames(): CanvasFrameEntry[] {
       content: <Experience />,
     },
     {
-      id: EDUCATION_FRAME_ID,
-      label: "Education",
-      sectionTitle: "Education",
-      content: <Education />,
+      id: DESIGN_SYSTEM_FRAME_ID,
+      label: "Design System",
+      sectionTitle: "Design System",
+      content: <DesignSystem />,
     },
     {
       id: GET_IN_TOUCH_FRAME_ID,
@@ -77,5 +80,5 @@ export function getPrimaryCanvasFrames(): CanvasFrameEntry[] {
 }
 
 export function getProjectCanvasFrames(): CanvasFrameEntry[] {
-  return getCanvasFrames().filter((frame) => !PRIMARY_FRAME_IDS.has(frame.id));
+  return getCanvasFrames().filter((frame) => !PRIMARY_FRAME_IDS.has(frame.id) && !DESIGN_SYSTEM_FRAME_IDS.has(frame.id));
 }
