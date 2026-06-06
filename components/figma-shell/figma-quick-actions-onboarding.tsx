@@ -73,7 +73,7 @@ export function FigmaQuickActionsOnboarding({ hidden = false }: FigmaQuickAction
 
   return (
     <div
-      className="pointer-events-none absolute inset-x-3 bottom-4 z-30 flex justify-end sm:inset-x-auto sm:right-5 sm:bottom-6"
+      className="pointer-events-none absolute inset-x-3 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-30 flex justify-end sm:inset-x-auto sm:right-5 sm:bottom-[calc(6rem+env(safe-area-inset-bottom))]"
       data-canvas-interactive
     >
       <div
@@ -89,10 +89,10 @@ export function FigmaQuickActionsOnboarding({ hidden = false }: FigmaQuickAction
           <button
             type="button"
             onClick={dismiss}
-            className="shrink-0 rounded p-0.5 text-[#7a7a7a] transition-colors hover:bg-[#f5f5f5] hover:text-[#333]"
+            className="flex size-11 shrink-0 items-center justify-center rounded text-[#7a7a7a] transition-colors hover:bg-[#f5f5f5] hover:text-[#333]"
             aria-label="Dismiss quick actions tip"
           >
-            <X className="size-4" aria-hidden />
+            <X className="size-5" aria-hidden />
           </button>
         </div>
 
@@ -101,7 +101,7 @@ export function FigmaQuickActionsOnboarding({ hidden = false }: FigmaQuickAction
         </div>
 
         <div className="flex items-end justify-between gap-3 px-3 py-3">
-          <p id="quick-actions-onboarding-desc" className="max-w-[200px] text-[11px] leading-snug text-[#333]">
+          <p id="quick-actions-onboarding-desc" className="max-w-[200px] text-[13px] leading-snug text-[#333]">
             Press{" "}
             <kbd className="rounded border border-[#e6e6e6] bg-[#fafafa] px-1 py-px font-sans text-[10px] text-[#333]">
               {modKey}+K
@@ -111,7 +111,7 @@ export function FigmaQuickActionsOnboarding({ hidden = false }: FigmaQuickAction
           <button
             type="button"
             onClick={dismiss}
-            className="shrink-0 rounded-md px-3 py-1.5 text-[12px] font-semibold text-white transition-colors hover:opacity-90"
+            className="flex h-11 shrink-0 items-center rounded-md px-4 text-[15px] font-semibold text-white transition-colors hover:opacity-90"
             style={{ backgroundColor: figmaBlue }}
           >
             Got it

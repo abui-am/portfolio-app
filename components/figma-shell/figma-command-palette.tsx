@@ -150,7 +150,7 @@ export function FigmaCommandPalette({ open, onOpenChange }: FigmaCommandPaletteP
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[120] flex items-start justify-center bg-black/40 px-4 pt-[min(18vh,120px)] backdrop-blur-[1px]"
+      className="fixed inset-0 z-[120] flex items-start justify-center bg-black/40 px-4 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur-[1px] sm:pt-[min(18vh,120px)]"
       data-canvas-interactive
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) close();
@@ -171,7 +171,7 @@ export function FigmaCommandPalette({ open, onOpenChange }: FigmaCommandPaletteP
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Type a command or search..."
-            className="min-w-0 flex-1 bg-transparent text-[13px] text-[#333] outline-none placeholder:text-[#b3b3b3]"
+            className="min-w-0 flex-1 bg-transparent text-base text-[#333] outline-none placeholder:text-[#b3b3b3] sm:text-[13px]"
             aria-controls="figma-command-list"
             aria-activedescendant={
               filteredItems[activeIndex] ? `figma-command-${filteredItems[activeIndex].id}` : undefined
@@ -202,7 +202,7 @@ export function FigmaCommandPalette({ open, onOpenChange }: FigmaCommandPaletteP
                   data-command-index={index}
                   onMouseEnter={() => setActiveIndex(index)}
                   onClick={() => runItem(item)}
-                  className={`flex w-full items-center gap-2.5 px-3 py-2 text-left text-[13px] transition-colors ${
+                  className={`flex min-h-11 w-full items-center gap-2.5 px-3 py-2.5 text-left text-[15px] transition-colors sm:min-h-0 sm:py-2 sm:text-[13px] ${
                     isActive ? "bg-[#e8f3ff] text-[#18a0fb]" : "text-[#333] hover:bg-[#f5f5f5]"
                   }`}
                 >

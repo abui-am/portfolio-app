@@ -242,13 +242,13 @@ export default function Portfolio() {
         </FigmaLayer>
 
         <FigmaLayer
-          name="Passionate Software..."
+          name="Experienced Software Engineer..."
           icon="text"
           as="p"
           data-frame-reveal="description"
           className="max-w-[472px] text-[15px] leading-relaxed text-black/60"
         >
-          Passionate Software Engineer. Shipped more than 20+ projects, I’m your partner in crime for crafting scalable solutions from your
+          <b>Experienced Software Engineer.</b> Shipped more than 20+ projects, I’m your partner in crime for crafting scalable solutions from your
           brand and products.
         </FigmaLayer>
 
@@ -259,7 +259,7 @@ export default function Portfolio() {
           data-frame-reveal="tech"
           className="max-w-[472px] text-[15px] leading-relaxed text-black/60"
         >
-          Expert in Frontend Development, and have a strong foundation in UI/UX Design and Backend Development. I’ll build what you envision.
+          Expert in <b>Frontend Development</b>, and have a strong foundation in <b>UI/UX Design</b> and <b>Backend Development</b>. I’ll build what you envision.
         </FigmaLayer>
 
         <FigmaLayer
