@@ -76,6 +76,7 @@ export default function AboutMe() {
           }
         >
 
+
           <FigmaLayer
             name="How it all started..."
             icon="frame"
@@ -114,6 +115,7 @@ export default function AboutMe() {
               <AboutMePropertiesPanel selectedId={selectedLayerId} />
             </FigmaLayer>
           </FigmaLayer>
+
           <FigmaLayer name="Visual" icon="frame" className={`flex ${visualCol} flex-col gap-4`}>
             <FigmaLayer name="Kaizen OS card" icon="frame" data-frame-reveal="logo" className="w-full">
               <div className="frame-float w-full">
@@ -131,7 +133,6 @@ export default function AboutMe() {
               </FigmaLayer>
             ) : null}
           </FigmaLayer>
-
         </FigmaLayer>
       </FigmaLayer>
     </section>

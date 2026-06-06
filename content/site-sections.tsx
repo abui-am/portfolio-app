@@ -18,7 +18,7 @@ export function getSiteSections(): SiteSectionEntry[] {
   return [
     { id: "home", content: <Portfolio /> },
     { id: "about-me", content: <AboutMe /> },
-    { id: "experience", title: "Experience", content: <Experience /> },
+    { id: "experience", title: "Latest Experience", content: <Experience /> },
     {
       id: SELECTED_PROJECTS_SECTION_ID,
       title: "Selected Projects",

@@ -81,7 +81,8 @@ export const experienceEntries: ExperienceEntry[] = [
   {
     role: "Frontend Engineer II",
     company: "Evermos",
-    employment: "Full-time (Bandung)",
+    employment: "Full-time",
+    location: "Bandung, Indonesia",
     period: "Jul 2025 - Mar 2026",
     fundingRound: "Series C",
     employeeRange: "500–1,000 employees",
@@ -131,8 +132,9 @@ export const experienceEntries: ExperienceEntry[] = [
   {
     role: "Senior Frontend Engineer",
     company: "Dealls Jobs (YC W22)",
-    employment: "Full-time (Remote)",
+    employment: "Full-time",
     period: "Dec 2022 - Jul 2025",
+    location: "Remote",
     fundingRound: "Series Seed",
     employeeRange: "50–200 employees",
     description:

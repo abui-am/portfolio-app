@@ -51,7 +51,7 @@ export function getCanvasFrames(): CanvasFrameEntry[] {
     {
       id: EXPERIENCE_FRAME_ID,
       label: "Latest Experience",
-      sectionTitle: "Experience",
+      sectionTitle: "Latest Experience",
       content: <Experience />,
     },
     {
