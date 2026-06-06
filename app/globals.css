@@ -298,6 +298,8 @@ html {
   }
 
   .profile-flip-scene {
+    position: relative;
+    z-index: 0;
     perspective: 900px;
     transition: transform 0.4s var(--frame-ease);
   }

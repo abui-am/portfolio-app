@@ -34,6 +34,13 @@ const lora = Lora({
 const accent = "#7c4dff";
 const accentMuted = "rgba(97, 86, 245, 0.1)";
 const headline = "#292423";
+const portfolioLocationArea = "Bali";
+const portfolioLocationRegion = "Indonesia";
+const portfolioLocation = `${portfolioLocationArea}, ${portfolioLocationRegion}`;
+const portfolioLocationMapsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(portfolioLocation)}`;
+
+const portfolioLocationLinkClassName =
+  "underline decoration-black/30 underline-offset-2 transition-colors hover:text-black hover:decoration-black/60";
 
 interface TechIconTileProps {
   src: string;
@@ -146,10 +153,10 @@ function ProfilePhotoFlip() {
       onMouseMove={handleMouseMove}
       aria-pressed={isFlipped}
       aria-label={isFlipped ? "Show profile photo" : "Show sketched portrait"}
-      className={`profile-flip-trigger size-full rounded-2xl bg-neutral-200${isAnimating ? " profile-flip-trigger--animating" : ""}`}
+      className={`profile-flip-trigger relative size-full rounded-2xl bg-neutral-200${isAnimating ? " profile-flip-trigger--animating" : ""}`}
     >
       <div
-        className={`profile-flip-scene size-full${isHovering && !isAnimating ? " profile-flip-scene--tracking" : ""}`}
+        className={`profile-flip-scene relative z-0 size-full${isHovering && !isAnimating ? " profile-flip-scene--tracking" : ""}`}
         style={sceneTransform ? { transform: sceneTransform } : undefined}
       >
         <div
@@ -177,6 +184,7 @@ function ProfilePhotoFlip() {
           </div>
         </div>
       </div>
+
     </button>
   );
 }
@@ -248,7 +256,19 @@ export default function Portfolio() {
           data-frame-reveal="description"
           className="max-w-[472px] text-[15px] leading-relaxed text-black/60"
         >
-          <b>Experienced Software Engineer.</b> Shipped more than 20+ projects, I’m your partner in crime for crafting scalable solutions from your
+          <b>
+            Experienced Software Engineer</b> based in <b>
+            <a
+              href={portfolioLocationMapsHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={portfolioLocationLinkClassName}
+            >
+              {portfolioLocationArea},{" "}{portfolioLocationRegion}
+            </a>
+            .
+          </b>{" "}
+          Shipped more than <b>20+ projects</b>, I’m your partner in crime for crafting scalable solutions from your
           brand and products.
         </FigmaLayer>
 
@@ -268,7 +288,7 @@ export default function Portfolio() {
           data-frame-reveal="actions"
           className="flex flex-row flex-wrap items-start gap-[13px]"
         >
-          <FigmaLayer name="CV" icon="component">
+          <FigmaLayer name="Download CV" icon="component">
             <a
               href={CV_PDF_HREF}
               download={CV_DOWNLOAD_NAME}
@@ -307,8 +327,8 @@ export default function Portfolio() {
             data-frame-reveal="media"
             className={
               isSite
-                ? "relative mx-auto aspect-square w-full max-w-[266px] shrink-0 rounded-2xl sm:mx-0"
-                : "relative size-[266px] shrink-0 rounded-2xl"
+                ? "relative isolate mx-auto aspect-square w-full max-w-[266px] shrink-0 overflow-visible rounded-2xl sm:mx-0"
+                : "relative isolate size-[266px] shrink-0 overflow-visible rounded-2xl"
             }
           >
             <ProfilePhotoFlip />

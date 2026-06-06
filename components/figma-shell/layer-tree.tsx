@@ -16,13 +16,22 @@ interface LayerTreeRowProps {
   frameActive?: boolean;
   isFrameRoot?: boolean;
   defaultExpanded?: boolean;
+  forceExpanded?: boolean;
 }
 
-function LayerTreeRow({ node, depth, frameActive, isFrameRoot, defaultExpanded = true }: LayerTreeRowProps) {
+function LayerTreeRow({
+  node,
+  depth,
+  frameActive,
+  isFrameRoot,
+  defaultExpanded = true,
+  forceExpanded = false,
+}: LayerTreeRowProps) {
   const { focusLayer } = useFigmaCanvas();
   const selectedLayerId = useSelectedLayerId();
   const hasChildren = node.children.length > 0;
   const [expanded, setExpanded] = useState(defaultExpanded);
+  const isExpanded = forceExpanded || expanded;
   const paddingLeft = 4 + depth * INDENT_PX;
   const isSelected = selectedLayerId === node.id;
   const isHighlighted = isFrameRoot
@@ -52,9 +61,9 @@ function LayerTreeRow({ node, depth, frameActive, isFrameRoot, defaultExpanded =
             type="button"
             onClick={handleChevronClick}
             className="flex size-4 shrink-0 items-center justify-center rounded-sm hover:bg-black/5"
-            aria-label={expanded ? "Collapse layer" : "Expand layer"}
+            aria-label={isExpanded ? "Collapse layer" : "Expand layer"}
           >
-            <ChevronIcon expanded={expanded} />
+            <ChevronIcon expanded={isExpanded} />
           </button>
         ) : (
           <span className="size-4 shrink-0" aria-hidden />
@@ -84,9 +93,15 @@ function LayerTreeRow({ node, depth, frameActive, isFrameRoot, defaultExpanded =
         </div>
       </div>
 
-      {hasChildren && expanded
+      {hasChildren && isExpanded
         ? [...node.children].reverse().map((child) => (
-            <LayerTreeRow key={child.id} node={child} depth={depth + 1} defaultExpanded={defaultExpanded} />
+            <LayerTreeRow
+              key={child.id}
+              node={child}
+              depth={depth + 1}
+              defaultExpanded={defaultExpanded}
+              forceExpanded={forceExpanded}
+            />
           ))
         : null}
     </>
@@ -97,9 +112,10 @@ interface LayerTreeProps {
   nodes: LayerTreeNode[];
   depth?: number;
   defaultExpanded?: boolean;
+  forceExpanded?: boolean;
 }
 
-export function LayerTree({ nodes, depth = 0, defaultExpanded = true }: LayerTreeProps) {
+export function LayerTree({ nodes, depth = 0, defaultExpanded = true, forceExpanded = false }: LayerTreeProps) {
   return (
     <>
       {[...nodes].reverse().map((node) => (
@@ -108,6 +124,7 @@ export function LayerTree({ nodes, depth = 0, defaultExpanded = true }: LayerTre
           node={node}
           depth={depth}
           defaultExpanded={defaultExpanded}
+          forceExpanded={forceExpanded}
         />
       ))}
     </>
@@ -119,9 +136,10 @@ interface FrameLayerTreeProps {
   label: string;
   active?: boolean;
   nodes: LayerTreeNode[];
+  forceExpanded?: boolean;
 }
 
-export function FrameLayerTree({ frameId, label, active, nodes }: FrameLayerTreeProps) {
+export function FrameLayerTree({ frameId, label, active, nodes, forceExpanded = false }: FrameLayerTreeProps) {
   const frameNode: LayerTreeNode = {
     id: frameId,
     label,
@@ -129,5 +147,14 @@ export function FrameLayerTree({ frameId, label, active, nodes }: FrameLayerTree
     children: nodes,
   };
 
-  return <LayerTreeRow node={frameNode} depth={0} frameActive={active} isFrameRoot defaultExpanded />;
+  return (
+    <LayerTreeRow
+      node={frameNode}
+      depth={0}
+      frameActive={active}
+      isFrameRoot
+      defaultExpanded
+      forceExpanded={forceExpanded}
+    />
+  );
 }

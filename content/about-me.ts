@@ -170,7 +170,7 @@ export const aboutMeTimeline: AboutTimelineEntry[] = [
   {
     year: "2022",
     title: "Working as a Senior Frontend Engineer",
-    detail: "Dealls · job board & HRIS",
+    detail: "Dealls Jobs · KantorKu",
     kind: "work",
   },
   {

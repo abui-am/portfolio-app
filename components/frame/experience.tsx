@@ -41,7 +41,7 @@ const featureIconSets: Record<string, (typeof GraduationCap)[]> = {
 
 function ExperienceMeta({ entry }: { entry: ExperienceEntry }) {
   const parts = [entry.company, entry.employment, entry.period].filter(Boolean);
-  return <>{parts.join(" | ")}</>;
+  return <>{parts.join(" · ")}</>;
 }
 
 function ExperienceFeatureCard({
@@ -261,9 +261,8 @@ export default function Experience() {
   return (
     <section
       ref={ref}
-      className={`frame-animated ${inView ? "frame-in-view" : ""} ${manrope.variable} ${lora.variable} box-border ${
-        isSite ? "w-full bg-transparent px-0 py-0" : "w-[1440px] bg-[#F8F8F8] px-[128px] py-10"
-      }`}
+      className={`frame-animated ${inView ? "frame-in-view" : ""} ${manrope.variable} ${lora.variable} box-border ${isSite ? "w-full bg-transparent px-0 py-0" : "w-[1440px] bg-[#F8F8F8] px-[128px] py-10"
+        }`}
       style={{
         fontFamily: "var(--font-portfolio-sans), ui-sans-serif, system-ui, sans-serif",
       }}

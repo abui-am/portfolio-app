@@ -109,7 +109,7 @@ export function AboutMeInteractiveCard() {
               </div>
 
               <div className="grid grid-cols-3 gap-2">
-                <StatTile label="Role" value={aboutMeOs.role} />
+                <StatTile label="Expertise" value={aboutMeOs.role} />
                 <StatTile label="Experience" value={aboutMeOs.experience} />
                 <StatTile label="Stack" value={aboutMeOs.stack} />
               </div>

@@ -93,7 +93,7 @@ function createFigmaLayersStore() {
       return () => listeners.delete(listener);
     },
     getFrames() {
-      return framesSnapshot;
+      return framesSnapshot.reverse();
     },
     nextOrder() {
       order += 1;

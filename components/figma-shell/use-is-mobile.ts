@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useLayoutEffect, useState } from "react";
 
-const MOBILE_QUERY = "(max-width: 1023px)";
+export const MOBILE_MEDIA_QUERY = "(max-width: 1023px)";
 
 export function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false);
 
-  useEffect(() => {
-    const mediaQuery = window.matchMedia(MOBILE_QUERY);
+  useLayoutEffect(() => {
+    const mediaQuery = window.matchMedia(MOBILE_MEDIA_QUERY);
 
     function sync() {
       setIsMobile(mediaQuery.matches);
@@ -21,3 +21,4 @@ export function useIsMobile() {
 
   return isMobile;
 }
+

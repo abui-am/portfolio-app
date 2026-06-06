@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import {
   ChevronDown,
   ChevronLeft,
@@ -33,7 +33,7 @@ import {
 import { FigmaCommandPalette, useFigmaCommandPaletteShortcut } from "@/components/figma-shell/figma-command-palette";
 import { FigmaMobileQuickActionsFab } from "@/components/figma-shell/figma-mobile-quick-actions-fab";
 import { FigmaQuickActionsOnboarding } from "@/components/figma-shell/figma-quick-actions-onboarding";
-import { useIsMobile } from "@/components/figma-shell/use-is-mobile";
+import { MOBILE_MEDIA_QUERY } from "@/components/figma-shell/use-is-mobile";
 
 /** Mobile top bar content height + safe-area for 44pt touch targets; desktop stays 40px via `lg:h-10`. */
 const TOP_BAR_MOBILE_PX = 52;
@@ -111,9 +111,9 @@ function TopBar({
 }) {
   return (
     <header
-      className={`flex h-[calc(${TOP_BAR_MOBILE_PX}px+env(safe-area-inset-top))] shrink-0 items-center gap-1 border-b ${border} bg-white px-2 min-w-0 overflow-hidden pt-[env(safe-area-inset-top)] lg:h-10 lg:min-h-10 lg:gap-0.5 lg:px-1 lg:pt-0`}
+      className={`relative z-[60] flex h-[calc(${TOP_BAR_MOBILE_PX}px+env(safe-area-inset-top))] shrink-0 items-center gap-1 border-b ${border} bg-white px-2 min-w-0 overflow-hidden pt-[env(safe-area-inset-top)] lg:z-auto lg:h-10 lg:min-h-10 lg:gap-0.5 lg:px-1 lg:pt-0`}
     >
-      <div className="flex shrink-0 items-center py-2 lg:py-0">
+      <div className="flex shrink-0 items-center">
 
         <button
           type="button"
@@ -229,20 +229,51 @@ function LeftPanel({
   onSelectPage,
   onToggleChrome,
   onCloseMobile,
-  isMobileOverlay,
-  onOpenCommandPalette,
 }: {
   activePageId: string;
   onSelectPage: (pageId: string) => void;
   onToggleChrome: () => void;
   onCloseMobile?: () => void;
-  isMobileOverlay?: boolean;
-  onOpenCommandPalette: () => void;
 }) {
+  const [layerSearchQuery, setLayerSearchQuery] = useState("");
+  const [isLayerSearchOpen, setIsLayerSearchOpen] = useState(false);
+  const layerSearchInputRef = useRef<HTMLInputElement>(null);
+  const showLayerSearch = isLayerSearchOpen || layerSearchQuery.length > 0;
+
+  const openLayerSearch = useCallback(() => {
+    setIsLayerSearchOpen(true);
+    requestAnimationFrame(() => layerSearchInputRef.current?.focus());
+  }, []);
+
+  const closeLayerSearch = useCallback(() => {
+    setIsLayerSearchOpen(false);
+    setLayerSearchQuery("");
+  }, []);
+
+  useEffect(() => {
+    closeLayerSearch();
+  }, [activePageId, closeLayerSearch]);
+
+  useEffect(() => {
+    if (!isLayerSearchOpen) return;
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      closeLayerSearch();
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [closeLayerSearch, isLayerSearchOpen]);
+
+  useEffect(() => {
+    if (!showLayerSearch) return;
+    requestAnimationFrame(() => layerSearchInputRef.current?.focus());
+  }, [showLayerSearch]);
   return (
     <aside
-      className={`flex h-full min-h-0 w-[240px] shrink-0 flex-col border-r ${border} bg-white ${isMobileOverlay ? "shadow-xl" : ""
-        }`}
+      className={`flex h-full min-h-0 w-[240px] shrink-0 flex-col border-r ${border} bg-white max-lg:pt-[calc(${TOP_BAR_MOBILE_PX}px+env(safe-area-inset-top))] max-lg:shadow-xl`}
     >
       <div className={`flex items-center gap-2 border-b ${border} px-3 py-2`}>
         <FigmaMark className="size-[22px] shrink-0" />
@@ -262,16 +293,14 @@ function LeftPanel({
         >
           <PanelLeftClose className="size-4" strokeWidth={2} aria-hidden />
         </button>
-        {isMobileOverlay ? (
-          <button
-            type="button"
-            onClick={onCloseMobile}
-            className="flex size-11 shrink-0 items-center justify-center rounded text-[#7a7a7a] hover:bg-[#f5f5f5] hover:text-[#333] lg:hidden"
-            aria-label="Close layers panel"
-          >
-            <X className="size-5" aria-hidden />
-          </button>
-        ) : null}
+        <button
+          type="button"
+          onClick={onCloseMobile}
+          className="flex size-11 shrink-0 items-center justify-center rounded text-[#7a7a7a] hover:bg-[#f5f5f5] hover:text-[#333] lg:hidden"
+          aria-label="Close layers panel"
+        >
+          <X className="size-5" aria-hidden />
+        </button>
       </div>
       <div className={`flex items-center justify-between border-b ${border} px-3 py-2`}>
         <div className="flex gap-4 text-[12px] font-medium">
@@ -280,14 +309,39 @@ function LeftPanel({
         </div>
         <button
           type="button"
-          onClick={onOpenCommandPalette}
-          className="flex size-11 shrink-0 items-center justify-center rounded text-[#7a7a7a] hover:bg-[#f5f5f5] lg:size-auto lg:p-1"
-          aria-label="Quick actions (Ctrl+K)"
-          title="Quick actions (Ctrl+K)"
+          onClick={openLayerSearch}
+          className={`flex size-11 shrink-0 items-center justify-center rounded lg:size-auto lg:p-1 ${showLayerSearch ? "bg-[#e8f3ff] text-[#18a0fb]" : "text-[#7a7a7a] hover:bg-[#f5f5f5]"}`}
+          aria-label="Search layers"
+          aria-pressed={showLayerSearch}
+          title="Search layers"
         >
           <Search className="size-5 lg:size-4" aria-hidden />
         </button>
       </div>
+      {showLayerSearch ? (
+        <div className={`border-b ${border} px-3 py-2`}>
+          <div className="flex items-center gap-1.5 rounded-md border border-[#e6e6e6] bg-[#fafafa] px-2 py-1.5">
+            <Search className="size-3.5 shrink-0 text-[#7a7a7a]" aria-hidden />
+            <input
+              ref={layerSearchInputRef}
+              type="search"
+              value={layerSearchQuery}
+              onChange={(event) => setLayerSearchQuery(event.target.value)}
+              placeholder="Search layers…"
+              className="min-w-0 flex-1 bg-transparent text-[12px] text-[#333] outline-none placeholder:text-[#b3b3b3] [&::-webkit-search-cancel-button]:hidden"
+              aria-label="Search layers"
+            />
+            <button
+              type="button"
+              onClick={closeLayerSearch}
+              className="flex size-6 shrink-0 items-center justify-center rounded text-[#7a7a7a] hover:bg-[#f0f0f0] hover:text-[#333]"
+              aria-label="Close layer search"
+            >
+              <X className="size-3.5" aria-hidden />
+            </button>
+          </div>
+        </div>
+      ) : null}
       <div className={`shrink-0 border-b ${border} px-3 py-2`}>
         <div className="mb-2 flex items-center justify-between">
           <span className="text-[11px] font-semibold uppercase tracking-[0.02em] text-[#7a7a7a]">Pages</span>
@@ -314,7 +368,7 @@ function LeftPanel({
           </button>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-black/15">
-          <FigmaLeftPanelLayers />
+          <FigmaLeftPanelLayers searchQuery={layerSearchQuery} />
         </div>
       </div>
     </aside>
@@ -486,7 +540,6 @@ function PresentationOverlay({ onExit }: { onExit: () => void }) {
 }
 
 function FigmaAppShell() {
-  const isMobile = useIsMobile();
   const [activePageId, setActivePageId] = useState(PORTFOLIO_PAGE_ID);
   const [isPresentationMode, setIsPresentationMode] = useState(false);
   const [isChromeHidden, setIsChromeHidden] = useState(false);
@@ -502,12 +555,19 @@ function FigmaAppShell() {
     setIsMobileLayersOpen(false);
   }, []);
 
-  useEffect(() => {
-    if (isMobile) {
+  useLayoutEffect(() => {
+    const mediaQuery = window.matchMedia(MOBILE_MEDIA_QUERY);
+
+    function syncMobileChrome() {
+      if (!mediaQuery.matches) return;
       setIsChromeHidden(true);
       setIsMobileLayersOpen(false);
     }
-  }, [isMobile]);
+
+    syncMobileChrome();
+    mediaQuery.addEventListener("change", syncMobileChrome);
+    return () => mediaQuery.removeEventListener("change", syncMobileChrome);
+  }, []);
 
   const toggleChrome = useCallback(() => {
     setIsChromeHidden((prev) => !prev);
@@ -591,8 +651,8 @@ function FigmaAppShell() {
   }, [exitPresentation, isPresentationMode]);
 
   const arePanelsHidden = isChromeHidden || isPresentationMode;
-  const showMobileLayersDrawer = isMobile && isMobileLayersOpen && !isPresentationMode;
-  const showLeftPanel = !isPresentationMode && (!arePanelsHidden || showMobileLayersDrawer);
+  const showMobileLayersBackdrop = isMobileLayersOpen && !isPresentationMode;
+  const showDesktopLeftPanel = !isPresentationMode && !arePanelsHidden;
 
   return (
     <div
@@ -608,29 +668,24 @@ function FigmaAppShell() {
         />
       ) : null}
       <div className="relative flex min-h-0 flex-1">
-        {showMobileLayersDrawer ? (
+        {showMobileLayersBackdrop ? (
           <button
             type="button"
-            className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+            className="fixed inset-0 z-40 bg-black/40 max-lg:block lg:hidden"
             aria-label="Close layers panel"
             onClick={closeMobileLayers}
           />
         ) : null}
-        {showLeftPanel ? (
+        {!isPresentationMode ? (
           <div
-            className={`${isMobile
-              ? `fixed inset-y-0 left-0 z-50 h-full min-h-0 transition-transform duration-200 ease-out ${isMobileLayersOpen ? "translate-x-0" : "-translate-x-full pointer-events-none"
-              }`
-              : "flex h-full min-h-0"
-              } lg:pointer-events-auto lg:static lg:flex lg:h-full lg:min-h-0 lg:translate-x-0`}
+            className={`fixed inset-y-0 left-0 z-50 h-dvh min-h-0 w-[240px] -translate-x-full pointer-events-none bg-white transition-transform duration-200 ease-out ${isMobileLayersOpen ? "max-lg:translate-x-0 max-lg:pointer-events-auto" : ""
+              } ${showDesktopLeftPanel ? "lg:static lg:z-auto lg:flex lg:h-full lg:w-auto lg:translate-x-0 lg:bg-transparent lg:pointer-events-auto" : "lg:hidden"}`}
           >
             <LeftPanel
               activePageId={activePageId}
               onSelectPage={handleSelectPage}
               onToggleChrome={toggleChrome}
               onCloseMobile={closeMobileLayers}
-              isMobileOverlay={isMobile}
-              onOpenCommandPalette={openCommandPalette}
             />
           </div>
         ) : null}

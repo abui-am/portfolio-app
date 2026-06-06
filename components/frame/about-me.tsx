@@ -77,7 +77,7 @@ export default function AboutMe() {
         >
 
           <FigmaLayer
-            name="About copy"
+            name="How it all started..."
             icon="frame"
             className={`flex ${copyCol} flex-col items-start gap-[13px] ${isSite ? "" : "shrink-0"}`}
           >
