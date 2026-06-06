@@ -113,7 +113,7 @@ function TopBar({
     <header
       className={`relative z-[60] flex h-[calc(${TOP_BAR_MOBILE_PX}px+env(safe-area-inset-top))] shrink-0 items-center gap-1 border-b ${border} bg-white px-2 min-w-0 overflow-hidden pt-[env(safe-area-inset-top)] lg:z-auto lg:h-10 lg:min-h-10 lg:gap-0.5 lg:px-1 lg:pt-0`}
     >
-      <div className="flex shrink-0 items-center">
+      <div className="flex shrink-0 items-center py-2">
 
         <button
           type="button"
@@ -279,7 +279,7 @@ function LeftPanel({
         <FigmaMark className="size-[22px] shrink-0" />
         <div className="min-w-0 flex-1">
           <button type="button" className="flex w-full items-center gap-0.5 text-left">
-            <span className="truncate text-[13px] font-semibold text-[#333]">Portfolio</span>
+            <span className="truncate text-[13px] font-semibold text-[#333]">Abuidillah Adjie Muliadi</span>
             <ChevronDown className="size-3.5 shrink-0 text-[#7a7a7a]" aria-hidden />
           </button>
           <p className="truncate text-[11px] leading-4 text-[#7a7a7a]">Drafts · Self Hosted</p>
