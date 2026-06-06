@@ -46,24 +46,7 @@ function AboutPropertiesPanelBody({ layerId }: { layerId: AboutLayerId }) {
     );
   }
 
-  if (layerId === "framework") {
-    return (
-      <>
-        <PropertyRow label="Name">{aboutMePropertiesPrinciples.name}</PropertyRow>
-        <PropertyRow label="Description">{aboutMePropertiesPrinciples.description}</PropertyRow>
-        <PropertyRow label="Breakdown">
-          <ul className="space-y-2">
-            {aboutMePrinciples.map((item) => (
-              <li key={item.label} className="text-[12px] leading-snug text-[#555]">
-                <p className="font-semibold text-[#7c4dff]">{item.label}</p>
-                <p className="mt-0.5 text-black/60">{item.detail}</p>
-              </li>
-            ))}
-          </ul>
-        </PropertyRow>
-      </>
-    );
-  }
+
 
   return null;
 }
