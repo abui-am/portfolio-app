@@ -282,7 +282,7 @@ function LeftPanel({
             <span className="truncate text-[13px] font-semibold text-[#333]">Abuidillah Adjie Muliadi</span>
             <ChevronDown className="size-3.5 shrink-0 text-[#7a7a7a]" aria-hidden />
           </button>
-          <p className="truncate text-[11px] leading-4 text-[#7a7a7a]">Drafts · Self Hosted</p>
+          <p className="truncate text-[11px] leading-4 text-[#7a7a7a]">Made with love</p>
         </div>
         <button
           type="button"
