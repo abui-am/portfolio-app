@@ -28,7 +28,7 @@ export function FigmaLeftPanelLayers({ searchQuery = "" }: FigmaLeftPanelLayersP
 
   return (
     <div className="flex flex-col">
-      {[...filteredFrames].reverse().map((frame) => (
+      {filteredFrames.map((frame) => (
         <FrameLayerTree
           key={frame.frameId}
           frameId={frame.frameId}

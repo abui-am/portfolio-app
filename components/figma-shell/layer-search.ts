@@ -53,5 +53,5 @@ export function filterLayerFrames(frames: FigmaFrameNode[], query: string): Figm
     }
   }
 
-  return filtered;
+  return filtered.sort((a, b) => a.order - b.order);
 }

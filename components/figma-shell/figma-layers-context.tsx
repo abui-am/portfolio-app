@@ -30,23 +30,46 @@ function getServerFramesSnapshot() {
   return SERVER_FRAMES_SNAPSHOT;
 }
 
+function layerChildrenKey(frameId: string, parentId: string) {
+  return `${frameId}:${parentId}`;
+}
+
+function buildChildrenIndex(entries: FigmaLayerRegistration[]) {
+  const index = new Map<string, FigmaLayerRegistration[]>();
+
+  for (const entry of entries) {
+    if (entry.isFrameRoot || entry.parentId === null) continue;
+
+    const key = layerChildrenKey(entry.frameId, entry.parentId);
+    const bucket = index.get(key);
+    if (bucket) bucket.push(entry);
+    else index.set(key, [entry]);
+  }
+
+  for (const bucket of index.values()) {
+    bucket.sort((a, b) => b.order - a.order);
+  }
+
+  return index;
+}
+
 function buildLayerTree(
-  entries: FigmaLayerRegistration[],
+  childrenIndex: Map<string, FigmaLayerRegistration[]>,
   frameId: string,
   parentId: string,
 ): FigmaLayerNode[] {
-  return entries
-    .filter((entry) => entry.frameId === frameId && entry.parentId === parentId && !entry.isFrameRoot)
-    .sort((a, b) => a.order - b.order)
-    .map((entry) => ({
-      id: entry.id,
-      label: entry.label,
-      icon: entry.icon,
-      children: buildLayerTree(entries, frameId, entry.id),
-    }));
+  const children = childrenIndex.get(layerChildrenKey(frameId, parentId)) ?? [];
+
+  return children.map((entry) => ({
+    id: entry.id,
+    label: entry.label,
+    icon: entry.icon,
+    children: buildLayerTree(childrenIndex, frameId, entry.id),
+  }));
 }
 
 function buildFramesSnapshot(entries: FigmaLayerRegistration[]): FigmaFrameNode[] {
+  const childrenIndex = buildChildrenIndex(entries);
   const roots = entries
     .filter((entry) => entry.isFrameRoot)
     .sort((a, b) => a.order - b.order);
@@ -56,7 +79,7 @@ function buildFramesSnapshot(entries: FigmaLayerRegistration[]): FigmaFrameNode[
     label: root.label,
     active: root.active,
     order: root.order,
-    children: buildLayerTree(entries, root.frameId, root.id),
+    children: buildLayerTree(childrenIndex, root.frameId, root.id),
   }));
 }
 
@@ -87,13 +110,26 @@ function createFigmaLayersStore() {
     framesSnapshot = buildFramesSnapshot(entries);
   }
 
+  let flushScheduled = false;
+
+  function scheduleFlush() {
+    if (flushScheduled) return;
+    flushScheduled = true;
+
+    queueMicrotask(() => {
+      flushScheduled = false;
+      rebuildSnapshot();
+      notify();
+    });
+  }
+
   return {
     subscribe(listener: () => void) {
       listeners.add(listener);
       return () => listeners.delete(listener);
     },
     getFrames() {
-      return framesSnapshot.reverse();
+      return framesSnapshot;
     },
     nextOrder() {
       order += 1;
@@ -104,15 +140,13 @@ function createFigmaLayersStore() {
       if (existing && isSameRegistration(existing, entry)) return;
 
       entries = [...entries.filter((item) => item.id !== entry.id), entry];
-      rebuildSnapshot();
-      notify();
+      scheduleFlush();
     },
     unregister(id: string) {
       if (!entries.some((item) => item.id === id)) return;
 
       entries = entries.filter((item) => item.id !== id);
-      rebuildSnapshot();
-      notify();
+      scheduleFlush();
     },
   };
 }

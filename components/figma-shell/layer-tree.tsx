@@ -47,11 +47,10 @@ function LayerTreeRow({
     focusLayer(node.id);
   }
 
-  const rowClassName = `flex min-w-0 flex-1 items-center gap-0.5 rounded-sm py-[3px] pr-1.5 text-left text-[11px] leading-4 ${
-    isHighlighted
-      ? "bg-[#daebf7] font-medium text-[#18a0fb]"
-      : "text-[#333]"
-  }`;
+  const rowClassName = `flex min-w-0 flex-1 items-center gap-0.5 rounded-sm py-[3px] pr-1.5 text-left text-[11px] leading-4 ${isHighlighted
+    ? "bg-[#daebf7] font-medium text-[#18a0fb]"
+    : "text-[#333]"
+    }`;
 
   return (
     <>
@@ -71,18 +70,16 @@ function LayerTreeRow({
 
         <div className={rowClassName}>
           <span
-            className={`flex size-4 shrink-0 items-center justify-center ${
-              isHighlighted ? "text-[#18a0fb]" : "text-[#7a7a7a]"
-            }`}
+            className={`flex size-4 shrink-0 items-center justify-center ${isHighlighted ? "text-[#18a0fb]" : "text-[#7a7a7a]"
+              }`}
           >
             <FigmaLayerIconGlyph type={node.icon} />
           </span>
           <button
             type="button"
             onClick={handleSelect}
-            className={`min-w-0 flex-1 truncate text-left ${
-              isHighlighted ? "text-[#18a0fb]" : "text-[#333] hover:text-[#18a0fb]"
-            }`}
+            className={`min-w-0 flex-1 truncate text-left ${isHighlighted ? "text-[#18a0fb]" : "text-[#333] hover:text-[#18a0fb]"
+              }`}
             aria-current={isSelected ? "true" : undefined}
           >
             {node.label}
@@ -94,15 +91,15 @@ function LayerTreeRow({
       </div>
 
       {hasChildren && isExpanded
-        ? [...node.children].reverse().map((child) => (
-            <LayerTreeRow
-              key={child.id}
-              node={child}
-              depth={depth + 1}
-              defaultExpanded={defaultExpanded}
-              forceExpanded={forceExpanded}
-            />
-          ))
+        ? node.children.map((child) => (
+          <LayerTreeRow
+            key={child.id}
+            node={child}
+            depth={depth + 1}
+            defaultExpanded={defaultExpanded}
+            forceExpanded={forceExpanded}
+          />
+        ))
         : null}
     </>
   );
@@ -118,7 +115,7 @@ interface LayerTreeProps {
 export function LayerTree({ nodes, depth = 0, defaultExpanded = true, forceExpanded = false }: LayerTreeProps) {
   return (
     <>
-      {[...nodes].reverse().map((node) => (
+      {nodes.map((node) => (
         <LayerTreeRow
           key={node.id}
           node={node}
