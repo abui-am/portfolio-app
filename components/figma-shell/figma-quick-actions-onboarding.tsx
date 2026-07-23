@@ -64,9 +64,28 @@ export function FigmaQuickActionsOnboarding({ hidden = false }: FigmaQuickAction
     setModKey(/Mac|iPhone|iPad/i.test(navigator.platform) ? "⌘" : "Ctrl");
     if (readDismissed()) return;
 
-    return deferUntilIdle(() => {
-      if (!readDismissed()) setIsVisible(true);
-    });
+    function scheduleShow() {
+      return deferUntilIdle(() => {
+        if (!readDismissed()) setIsVisible(true);
+      }, 6000);
+    }
+
+    let cleanup: (() => void) | undefined;
+
+    if (document.readyState === "complete") {
+      cleanup = scheduleShow();
+      return () => cleanup?.();
+    }
+
+    function onLoad() {
+      cleanup = scheduleShow();
+    }
+
+    window.addEventListener("load", onLoad, { once: true });
+    return () => {
+      window.removeEventListener("load", onLoad);
+      cleanup?.();
+    };
   }, []);
 
   function dismiss() {

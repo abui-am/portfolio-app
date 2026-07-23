@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { FileDown } from "lucide-react";
+import { Lora, Manrope } from "next/font/google";
 import type { MouseEvent, TransitionEvent } from "react";
 import { useState } from "react";
 
@@ -19,6 +20,18 @@ import { CV_DOWNLOAD_NAME, CV_PDF_HREF } from "@/content/cv-download";
 
 const actionLinkClassName =
   "w-fit gap-2 transition-transform duration-200 hover:scale-[1.03] active:scale-[0.98]";
+
+const manrope = Manrope({
+  subsets: ["latin"],
+  variable: "--font-portfolio-sans",
+  display: "swap",
+});
+
+const lora = Lora({
+  subsets: ["latin"],
+  variable: "--font-portfolio-serif",
+  display: "swap",
+});
 
 const accent = "#7c4dff";
 const accentMuted = "rgba(97, 86, 245, 0.1)";
@@ -90,7 +103,7 @@ function EmployerCard({ employer }: { employer: PortfolioEmployer }) {
   );
 }
 
-function ProfilePhotoFlip() {
+function ProfilePhotoFlip({ eagerLoadPhoto = false }: { eagerLoadPhoto?: boolean }) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
@@ -159,7 +172,8 @@ function ProfilePhotoFlip() {
               width={266}
               height={266}
               className="size-full object-cover"
-              priority
+              priority={eagerLoadPhoto}
+              loading={eagerLoadPhoto ? undefined : "lazy"}
             />
           </div>
           <div className="profile-flip-face profile-flip-face--back">
@@ -185,7 +199,7 @@ export default function Portfolio() {
   return (
     <section
       ref={ref}
-      className={`frame-animated ${inView ? "frame-in-view" : ""} box-border flex min-h-0 ${isSite
+      className={`frame-animated ${inView ? "frame-in-view" : ""} ${manrope.variable} ${lora.variable} box-border flex min-h-0 ${isSite
         ? "w-full flex-col gap-8 bg-transparent px-0 py-0 lg:min-h-[480px] lg:flex-row lg:items-start lg:justify-center lg:gap-x-[124px]"
         : "min-h-[480px] w-[1440px] flex-row items-start justify-center gap-x-[124px] bg-[#F8F8F8] px-[128px] py-10"
         }`}
@@ -320,7 +334,7 @@ export default function Portfolio() {
                 : "relative isolate size-[266px] shrink-0 overflow-visible rounded-2xl"
             }
           >
-            <ProfilePhotoFlip />
+            <ProfilePhotoFlip eagerLoadPhoto={isSite} />
           </FigmaLayer>
 
           <PortfolioTerminal />

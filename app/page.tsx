@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { FigmaApp } from "@/components/figma-shell/figma-app";
-import { MobileLcpFallback } from "@/components/figma-shell/mobile-lcp-fallback";
 import { PersonEntityDocument } from "@/components/seo/person-entity-document";
 import { personSeoHomeDescription, personSeoTitle } from "@/content/person-seo";
 import { createSiteMetadata } from "@/lib/seo/metadata";
@@ -15,7 +14,6 @@ export default function Home() {
   return (
     <>
       <PersonEntityDocument />
-      <MobileLcpFallback />
       <FigmaApp />
     </>
   );

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Inter, Lora, Manrope } from "next/font/google";
+import { Geist, Geist_Mono, Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { GoogleAnalytics } from "@/components/seo/google-analytics";
@@ -23,18 +23,6 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
-const manrope = Manrope({
-  subsets: ["latin"],
-  variable: "--font-portfolio-sans",
-  display: "swap",
-});
-
-const lora = Lora({
-  subsets: ["latin"],
-  variable: "--font-portfolio-serif",
-  display: "swap",
-});
-
 export const metadata: Metadata = createSiteMetadata();
 
 export const viewport: Viewport = {
@@ -51,7 +39,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${manrope.variable} ${lora.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} h-full antialiased`}
     >
       <head>
         <link rel="llms-txt" href="/llms.txt" type="text/plain" />
