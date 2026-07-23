@@ -6,7 +6,7 @@ export const personSeo = {
   givenName: "Abuidillah Adjie",
   familyName: "Muliadi",
   alternateNames: ["Abui Muliadi", "Abuidillah A. Muliadi"] as const,
-  jobTitle: "Software Engineer",
+  jobTitle: "Frontend Engineer",
   location: {
     area: "Bali",
     region: "Indonesia",
@@ -22,25 +22,27 @@ export const personSeo = {
 } as const;
 
 export const personSeoDescription =
-  "Abuidillah Adjie Muliadi — software engineer in Bali, Indonesia. React, Next.js, and TypeScript portfolio with projects and experience.";
+  "Frontend engineer in Bali specializing in Next.js and TypeScript web development. Selected projects, tech stack, professional work, and get in touch.";
 
 export const personSeoHomeDescription =
-  "Interactive Figma-style portfolio by Abuidillah Adjie Muliadi, a React and Next.js software engineer based in Bali, Indonesia.";
+  "Next.js and TypeScript frontend development portfolio in Bali. Selected project work, tech stack, and ways to get in touch with Abuidillah Adjie Muliadi.";
 
 export const personSeoPlayDescription =
-  "Selected projects, professional experience, and contact for Abuidillah Adjie Muliadi — React and Next.js software engineer in Bali.";
+  "Selected projects and frontend engineer experience — Next.js, TypeScript, and web development work in Bali. Tech stack, professional experience, get in touch.";
 
-export const personSeoTitle = `${personSeo.name} | Software Engineer Portfolio`;
+export const personSeoTitle = `${personSeo.name} | Frontend Engineer — Next.js & TypeScript`;
+
+export const personSeoPlayTitle = `${personSeo.name} | Selected Projects — Next.js Frontend Engineer`;
 
 export const personSeoKeywords = [
   personSeo.name,
   "Abuidillah Adjie Muliadi software engineer",
   "Abuidillah Adjie Muliadi portfolio",
   "Abui Muliadi",
-  "software engineer Bali",
-  "software engineer Indonesia",
-  "React developer Bali",
-  "Next.js developer Indonesia",
-  "TypeScript developer",
-  "frontend engineer portfolio",
+  "frontend engineer Bali",
+  "Next.js TypeScript developer",
+  "Next.js frontend engineer",
+  "TypeScript web development",
+  "selected projects portfolio",
+  "tech stack Next.js",
 ] as const;

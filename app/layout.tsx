@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { GoogleAnalytics } from "@/components/seo/google-analytics";
 import { JsonLdPerson } from "@/components/seo/json-ld-person";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { createSiteMetadata } from "@/lib/seo/metadata";
@@ -46,6 +47,7 @@ export default function RootLayout({
       </head>
       <body className={`min-h-full flex flex-col font-sans ${inter.className}`}>
         <JsonLdPerson />
+        <GoogleAnalytics />
         <TooltipProvider>{children}</TooltipProvider>
         <Analytics />
         <SpeedInsights />

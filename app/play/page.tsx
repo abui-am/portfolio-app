@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { PersonEntityDocument } from "@/components/seo/person-entity-document";
 import { PortfolioSite } from "@/components/site/portfolio-site";
-import { personSeo, personSeoPlayDescription } from "@/content/person-seo";
+import { personSeoPlayDescription, personSeoPlayTitle } from "@/content/person-seo";
 import { createSiteMetadata } from "@/lib/seo/metadata";
 
 export const metadata: Metadata = createSiteMetadata({
   path: "/play",
-  title: `${personSeo.name} | Portfolio, Projects & Experience`,
+  title: personSeoPlayTitle,
   description: personSeoPlayDescription,
 });
 

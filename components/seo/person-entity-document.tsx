@@ -44,7 +44,7 @@ export function PersonEntityDocument() {
       </header>
 
       <section id="entity-skills" aria-labelledby="entity-skills-heading">
-        <h2 id="entity-skills-heading">Skills & technologies</h2>
+        <h2 id="entity-skills-heading">Tech stack — Next.js, TypeScript &amp; frontend development</h2>
         <ul>
           {coreSkills.map((skill) => (
             <li key={skill}>{skill}</li>
@@ -53,7 +53,7 @@ export function PersonEntityDocument() {
       </section>
 
       <section id="entity-projects" aria-labelledby="entity-projects-heading">
-        <h2 id="entity-projects-heading">Selected projects</h2>
+        <h2 id="entity-projects-heading">Selected projects — Next.js &amp; TypeScript development work</h2>
         <ul>
           {selectedProjects.map((project) => (
             <li key={project.id}>
@@ -81,7 +81,7 @@ export function PersonEntityDocument() {
       </section>
 
       <section id="entity-experience" aria-labelledby="entity-experience-heading">
-        <h2 id="entity-experience-heading">Professional experience</h2>
+        <h2 id="entity-experience-heading">Frontend engineer &amp; product engineer experience</h2>
         <ul>
           {experienceEntries.map((entry) => (
             <li key={`${entry.company}-${entry.period}`}>
@@ -108,7 +108,7 @@ export function PersonEntityDocument() {
       </section>
 
       <section id="entity-contact" aria-labelledby="entity-contact-heading">
-        <h2 id="entity-contact-heading">Contact & profiles</h2>
+        <h2 id="entity-contact-heading">Get in touch</h2>
         <nav aria-label="Contact and profiles">
           <ul>
             {getInTouchLinks.map((link) => (
