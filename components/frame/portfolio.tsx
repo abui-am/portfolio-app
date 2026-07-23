@@ -279,7 +279,7 @@ export default function Portfolio() {
           data-frame-reveal="tech"
           className="max-w-[472px] text-[15px] leading-relaxed text-black/60"
         >
-          Expert in <b>Fullstack Development</b>, with a strong foundation in <b>UI/UX Design</b> and <b>Backend Development</b>. I’ll build what you envision.
+          Expert in <b>Frontend Development</b>, with a strong foundation in <b>UI/UX Design</b> and <b>Backend Development</b>. I’ll build what you envision.
         </FigmaLayer>
 
         <FigmaLayer
