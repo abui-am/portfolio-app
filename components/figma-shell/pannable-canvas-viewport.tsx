@@ -1,12 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
+import { CommentLayer } from "@/components/comments/comment-layer";
+import { useCommentMode } from "@/components/comments/comment-mode-context";
 import { useFigmaCanvas } from "@/components/figma-shell/figma-canvas-context";
 import { findLayerElement, getLayerBounds } from "@/components/figma-shell/layer-focus";
 
 interface PannableCanvasViewportProps {
   children: React.ReactNode;
   initialFrameId?: string;
+  pageId: string;
 }
 
 const MIN_SCALE = 0.25;
@@ -136,8 +139,9 @@ function scaleFromViewportWidth(widthPx: number) {
   return clampScale(1 + excessAboveOne * WIDE_SCREEN_SCALE_DAMPING);
 }
 
-export function PannableCanvasViewport({ children, initialFrameId }: PannableCanvasViewportProps) {
+export function PannableCanvasViewport({ children, initialFrameId, pageId }: PannableCanvasViewportProps) {
   const { registerFocusHandler, registerZoomApi, panToLayer, notifyScaleChange } = useFigmaCanvas();
+  const { isCommentMode, setPendingPin } = useCommentMode();
   const panRef = useRef({ x: 0, y: 0 });
   const scaleRef = useRef(1);
   const hasManualZoomRef = useRef(false);
@@ -605,6 +609,28 @@ export function PannableCanvasViewport({ children, initialFrameId }: PannableCan
   const onPointerUp = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
       if (pendingDragRef.current?.pointerId === e.pointerId) {
+        const pending = pendingDragRef.current;
+        const dx = e.clientX - pending.startX;
+        const dy = e.clientY - pending.startY;
+        const wasClick = Math.hypot(dx, dy) < DRAG_THRESHOLD_PX;
+
+        if (
+          wasClick &&
+          isCommentMode &&
+          e.button === 0 &&
+          !isInteractiveTarget(e.target) &&
+          !isCopyableTextTarget(e.target)
+        ) {
+          const layer = layerRef.current;
+          if (layer) {
+            const rect = layer.getBoundingClientRect();
+            const scale = layer.offsetWidth > 0 ? rect.width / layer.offsetWidth : 1;
+            const x = (e.clientX - rect.left) / scale;
+            const y = (e.clientY - rect.top) / scale;
+            setPendingPin({ x, y });
+          }
+        }
+
         cancelPendingDrag(e.currentTarget, e.pointerId);
         detachDocumentTouchBlock();
       }
@@ -618,7 +644,7 @@ export function PannableCanvasViewport({ children, initialFrameId }: PannableCan
       }
       endDrag();
     },
-    [cancelPendingDrag, detachDocumentTouchBlock, endDrag],
+    [cancelPendingDrag, detachDocumentTouchBlock, endDrag, isCommentMode, setPendingPin],
   );
 
   useEffect(() => {
@@ -711,7 +737,7 @@ export function PannableCanvasViewport({ children, initialFrameId }: PannableCan
     <div
       ref={viewportRef}
       className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden overscroll-none bg-[#f5f5f5]"
-      style={{ cursor: "grab", touchAction: "none" }}
+      style={{ cursor: isCommentMode ? "crosshair" : "grab", touchAction: "none" }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
@@ -722,10 +748,13 @@ export function PannableCanvasViewport({ children, initialFrameId }: PannableCan
     >
       <div
         ref={layerRef}
-        className="flex shrink-0 will-change-transform"
+        className="relative flex shrink-0 will-change-transform"
         style={{ transformOrigin: "center center" }}
       >
-        {children}
+        <div className="relative">
+          {children}
+          <CommentLayer pageId={pageId} />
+        </div>
       </div>
     </div>
   );

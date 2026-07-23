@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
+import { JsonLdPerson } from "@/components/seo/json-ld-person";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { createSiteMetadata } from "@/lib/seo/metadata";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -18,11 +20,7 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
-export const metadata: Metadata = {
-  title: "Abuidillah Adjie Muliadi — Software Engineer",
-  description:
-    "Portfolio of Abuidillah Adjie Muliadi, a software engineer focused on scalable web products with React, Next.js, and TypeScript. Selected work, experience, and projects.",
-};
+export const metadata: Metadata = createSiteMetadata();
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -41,6 +39,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} h-full antialiased`}
     >
       <body className={`min-h-full flex flex-col font-sans ${inter.className}`}>
+        <JsonLdPerson />
         <TooltipProvider>{children}</TooltipProvider>
       </body>
     </html>

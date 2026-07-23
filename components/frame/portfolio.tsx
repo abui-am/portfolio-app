@@ -238,7 +238,7 @@ export default function Portfolio() {
         <FigmaLayer
           name="Hi, It's Me..."
           icon="text"
-          as="h1"
+          as={isSite ? "h2" : "h1"}
           data-frame-reveal="title"
           className="text-[clamp(2rem,4vw,3.25rem)] leading-[1.12] tracking-tight"
           style={{

@@ -32,6 +32,9 @@ import {
 } from "@/content/canvas-pages";
 import { FigmaCommandPalette, useFigmaCommandPaletteShortcut } from "@/components/figma-shell/figma-command-palette";
 import { FigmaMobileQuickActionsFab } from "@/components/figma-shell/figma-mobile-quick-actions-fab";
+import { CommentModeProvider, useCommentMode } from "@/components/comments/comment-mode-context";
+import { CommentSidebar } from "@/components/comments/comment-sidebar";
+import { CommentToolbar } from "@/components/comments/comment-toolbar";
 import { FigmaQuickActionsOnboarding } from "@/components/figma-shell/figma-quick-actions-onboarding";
 import { MOBILE_MEDIA_QUERY } from "@/components/figma-shell/use-is-mobile";
 
@@ -487,7 +490,7 @@ function DummyCanvasFrame({ pageId }: { pageId: string }) {
     const frames = getFramesForPage(pageId);
 
     return (
-      <PannableCanvasViewport key={pageId} initialFrameId={page.initialFrameId}>
+      <PannableCanvasViewport key={pageId} initialFrameId={page.initialFrameId} pageId={pageId}>
         <div className="flex shrink-0 flex-col gap-12">
           {frames.map((frame) => (
             <CanvasFrame key={frame.id} id={frame.id} label={frame.label} active={frame.active}>
@@ -500,7 +503,7 @@ function DummyCanvasFrame({ pageId }: { pageId: string }) {
   }
 
   return (
-    <PannableCanvasViewport key={pageId} initialFrameId={page.initialFrameId}>
+    <PannableCanvasViewport key={pageId} initialFrameId={page.initialFrameId} pageId={pageId}>
       <div className="grid shrink-0 grid-cols-2 items-start gap-12">
         <div className="flex flex-col gap-12">
           {primaryFrames.map((frame) => (
@@ -539,8 +542,13 @@ function PresentationOverlay({ onExit }: { onExit: () => void }) {
   );
 }
 
-function FigmaAppShell() {
-  const [activePageId, setActivePageId] = useState(PORTFOLIO_PAGE_ID);
+function FigmaAppShellContent({
+  activePageId,
+  onSelectPage,
+}: {
+  activePageId: string;
+  onSelectPage: (pageId: string) => void;
+}) {
   const [isPresentationMode, setIsPresentationMode] = useState(false);
   const [isChromeHidden, setIsChromeHidden] = useState(false);
   const [isMobileLayersOpen, setIsMobileLayersOpen] = useState(false);
@@ -550,10 +558,13 @@ function FigmaAppShell() {
     setIsCommandPaletteOpen(true);
   }, []);
 
-  const handleSelectPage = useCallback((pageId: string) => {
-    setActivePageId(pageId);
-    setIsMobileLayersOpen(false);
-  }, []);
+  const handleSelectPage = useCallback(
+    (pageId: string) => {
+      onSelectPage(pageId);
+      setIsMobileLayersOpen(false);
+    },
+    [onSelectPage],
+  );
 
   useLayoutEffect(() => {
     const mediaQuery = window.matchMedia(MOBILE_MEDIA_QUERY);
@@ -653,6 +664,7 @@ function FigmaAppShell() {
   const arePanelsHidden = isChromeHidden || isPresentationMode;
   const showMobileLayersBackdrop = isMobileLayersOpen && !isPresentationMode;
   const showDesktopLeftPanel = !isPresentationMode && !arePanelsHidden;
+  const { isCommentMode } = useCommentMode();
 
   return (
     <div
@@ -692,13 +704,28 @@ function FigmaAppShell() {
         <main className="relative flex min-h-0 min-w-0 flex-1 flex-col bg-[#f5f5f5]">
           <DummyCanvasFrame pageId={activePageId} />
           <FigmaQuickActionsOnboarding hidden={isPresentationMode} />
+          <CommentToolbar hidden={isPresentationMode} />
           {isPresentationMode ? <PresentationOverlay onExit={exitPresentation} /> : null}
         </main>
-        {!arePanelsHidden ? <div className="hidden lg:contents"><RightPanel onOpenCommandPalette={openCommandPalette} /></div> : null}
+        {!arePanelsHidden ? (
+          <div className="hidden lg:contents">
+            {isCommentMode ? <CommentSidebar /> : <RightPanel onOpenCommandPalette={openCommandPalette} />}
+          </div>
+        ) : null}
       </div>
       <FigmaCommandPalette open={isCommandPaletteOpen} onOpenChange={setIsCommandPaletteOpen} />
       <FigmaMobileQuickActionsFab onOpen={openCommandPalette} hidden={isPresentationMode} />
     </div>
+  );
+}
+
+function FigmaAppShell() {
+  const [activePageId, setActivePageId] = useState(PORTFOLIO_PAGE_ID);
+
+  return (
+    <CommentModeProvider pageId={activePageId}>
+      <FigmaAppShellContent activePageId={activePageId} onSelectPage={setActivePageId} />
+    </CommentModeProvider>
   );
 }
 
