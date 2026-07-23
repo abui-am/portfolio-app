@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { ChevronRight } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FigmaLayer } from "@/components/figma-shell/figma-layer";
 import { useIsSiteView } from "@/components/site/site-view-context";
 import {
@@ -18,8 +18,17 @@ interface ProjectScreenshotCarouselProps {
   ariaLabel: string;
 }
 
-function getMaxOffset(screenshots: SelectedProjectScreenshot[], viewportWidth: number) {
-  const totalWidth = screenshots.reduce((sum, shot) => sum + shot.width, 0);
+interface CarouselSlide {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  displayWidth: number;
+  displayHeight: number;
+}
+
+function getMaxOffset(slides: CarouselSlide[], viewportWidth: number) {
+  const totalWidth = slides.reduce((sum, shot) => sum + shot.displayWidth, 0);
   return Math.max(0, totalWidth - viewportWidth);
 }
 
@@ -27,8 +36,35 @@ function screenshotLayerName(src: string) {
   return src.split("/").pop() ?? src;
 }
 
-function needsCarouselLetterboxBg(screenshots: SelectedProjectScreenshot[], stripHeight: number) {
-  return screenshots.some((shot) => shot.height !== stripHeight);
+function needsCarouselLetterboxBg(slides: CarouselSlide[], stripHeight: number) {
+  return slides.some((shot) => shot.displayHeight !== stripHeight);
+}
+
+function getLoadedSlideIndices(slides: CarouselSlide[], offset: number, viewportWidth: number) {
+  const indices = new Set<number>();
+  let left = 0;
+
+  for (let index = 0; index < slides.length; index++) {
+    const slide = slides[index];
+    const slideLeft = left;
+    const slideRight = left + slide.displayWidth;
+    const overlapsViewport = slideRight > offset && slideLeft < offset + viewportWidth;
+
+    if (overlapsViewport) {
+      indices.add(index);
+      if (index > 0) indices.add(index - 1);
+      if (index + 1 < slides.length) indices.add(index + 1);
+    }
+
+    left += slide.displayWidth;
+  }
+
+  if (indices.size === 0 && slides.length > 0) {
+    indices.add(0);
+    if (slides.length > 1) indices.add(1);
+  }
+
+  return indices;
 }
 
 export function ProjectScreenshotCarousel({
@@ -41,26 +77,30 @@ export function ProjectScreenshotCarousel({
   const [measuredWidth, setMeasuredWidth] = useState(viewportWidth);
   const effectiveViewportWidth = isSite ? Math.max(measuredWidth, 1) : viewportWidth;
 
-  const siteSlides = isSite
-    ? screenshots.map((shot) => {
-        const width = Math.min(shot.width, effectiveViewportWidth);
-        const height = Math.round((shot.height / shot.width) * width);
-        return { ...shot, displayWidth: width, displayHeight: height };
-      })
-    : null;
+  const slides = useMemo<CarouselSlide[]>(
+    () =>
+      screenshots.map((shot) => {
+        const displayWidth = isSite ? Math.min(shot.width, effectiveViewportWidth) : shot.width;
+        const displayHeight = Math.round((shot.height / shot.width) * displayWidth);
+        return {
+          src: shot.src,
+          alt: shot.alt,
+          width: shot.width,
+          height: shot.height,
+          displayWidth,
+          displayHeight,
+        };
+      }),
+    [effectiveViewportWidth, isSite, screenshots],
+  );
 
-  const scrollStep = isSite
-    ? (siteSlides?.[0]?.displayWidth ?? 614)
-    : (screenshots[0]?.width ?? 614);
-  const maxOffset = isSite
-    ? Math.max(0, (siteSlides?.reduce((sum, shot) => sum + shot.displayWidth, 0) ?? 0) - effectiveViewportWidth)
-    : getMaxOffset(screenshots, effectiveViewportWidth);
+  const scrollStep = slides[0]?.displayWidth ?? 614;
+  const maxOffset = getMaxOffset(slides, effectiveViewportWidth);
   const [offset, setOffset] = useState(0);
   const layout = SELECTED_PROJECT_LAYOUT;
-  const carouselStripHeight = isSite
-    ? Math.max(...(siteSlides?.map((shot) => shot.displayHeight) ?? [379]))
-    : getCarouselStripHeight(screenshots);
-  const letterboxBg = isSite ? false : needsCarouselLetterboxBg(screenshots, carouselStripHeight);
+  const carouselStripHeight = slides.length > 0 ? Math.max(...slides.map((shot) => shot.displayHeight)) : 379;
+  const letterboxBg = isSite ? false : needsCarouselLetterboxBg(slides, carouselStripHeight);
+  const loadedSlideIndices = getLoadedSlideIndices(slides, offset, effectiveViewportWidth);
 
   useEffect(() => {
     if (!isSite) return;
@@ -97,6 +137,43 @@ export function ProjectScreenshotCarousel({
 
   if (screenshots.length === 0) return null;
 
+  function renderSlide(shot: CarouselSlide, index: number) {
+    const shouldLoad = loadedSlideIndices.has(index);
+
+    return (
+      <FigmaLayer
+        key={shot.src}
+        name={screenshotLayerName(shot.src)}
+        icon="image"
+        className={`flex shrink-0 items-center justify-center${letterboxBg ? " bg-black" : ""}`}
+        style={{ width: shot.displayWidth, height: carouselStripHeight }}
+      >
+        {shouldLoad ? (
+          <Image
+            src={shot.src}
+            alt={shot.alt}
+            width={shot.displayWidth}
+            height={shot.displayHeight}
+            className={
+              isSite
+                ? "h-auto w-full max-w-full shrink-0 object-contain"
+                : "shrink-0 object-contain"
+            }
+            style={{ width: shot.displayWidth, height: shot.displayHeight }}
+            draggable={false}
+            loading="lazy"
+            unoptimized
+          />
+        ) : (
+          <div
+            aria-hidden
+            style={{ width: shot.displayWidth, height: shot.displayHeight }}
+          />
+        )}
+      </FigmaLayer>
+    );
+  }
+
   if (isSite) {
     return (
       <FigmaLayer name="Screenshots" icon="frame" className="relative mt-8 w-full">
@@ -114,26 +191,7 @@ export function ProjectScreenshotCarousel({
               className="flex flex-row transition-transform duration-500 ease-out"
               style={{ transform: `translate3d(-${offset}px, 0, 0)` }}
             >
-              {(siteSlides ?? []).map((shot) => (
-                <FigmaLayer
-                  key={shot.src}
-                  name={screenshotLayerName(shot.src)}
-                  icon="image"
-                  className="flex shrink-0 items-center justify-center"
-                  style={{ width: shot.displayWidth, height: carouselStripHeight }}
-                >
-                  <Image
-                    src={shot.src}
-                    alt={shot.alt}
-                    width={shot.displayWidth}
-                    height={shot.displayHeight}
-                    className="h-auto w-full max-w-full shrink-0 object-contain"
-                    style={{ width: shot.displayWidth, height: shot.displayHeight }}
-                    draggable={false}
-                    unoptimized
-                  />
-                </FigmaLayer>
-              ))}
+              {slides.map((shot, index) => renderSlide(shot, index))}
             </div>
           </FigmaLayer>
 
@@ -170,26 +228,7 @@ export function ProjectScreenshotCarousel({
           className="flex flex-row transition-transform duration-500 ease-out"
           style={{ transform: `translate3d(-${offset}px, 0, 0)` }}
         >
-          {screenshots.map((shot) => (
-            <FigmaLayer
-              key={shot.src}
-              name={screenshotLayerName(shot.src)}
-              icon="image"
-              className={`flex shrink-0 items-center${letterboxBg ? " bg-black" : ""}`}
-              style={{ width: shot.width, height: carouselStripHeight }}
-            >
-              <Image
-                src={shot.src}
-                alt={shot.alt}
-                width={shot.width}
-                height={shot.height}
-                className="shrink-0 object-contain"
-                style={{ width: shot.width, height: shot.height }}
-                draggable={false}
-                unoptimized
-              />
-            </FigmaLayer>
-          ))}
+          {slides.map((shot, index) => renderSlide(shot, index))}
         </div>
       </FigmaLayer>
 

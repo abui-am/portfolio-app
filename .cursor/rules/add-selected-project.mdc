@@ -13,6 +13,7 @@ Data-driven frames only — do not add a new React frame component unless layout
 1. **Assets** — `public/content/<slug>/`
    - `logo.svg` (261×261 in frame)
    - `image_1.png`, `image_2.png`, … carousel shots (`width: 614`, `height: 379` in data unless Figma says otherwise)
+   - Run `pnpm optimize:images` to generate `.webp` at 2× display size; reference `.webp` paths in `selected-projects.ts`
 
 2. **Tech icons** — Reuse `public/nextjs.svg`, `typescript.svg`, `openai.svg`, `python.svg`, or add a 32×32 SVG in `public/`.
 
@@ -51,6 +52,6 @@ export const myProject: SelectedProject = {
   githubUrl: "https://github.com/you/fe",
   githubBeUrl: "https://github.com/you/be", // optional
   logo: { src: "/content/my-app/logo.svg", alt: "My App logo" },
-  screenshots: [{ src: "/content/my-app/image_1.png", width: 614, height: 379, alt: "Screenshot 1" }],
+  screenshots: [{ src: "/content/my-app/image_1.webp", width: 614, height: 379, alt: "Screenshot 1" }],
 };
 ```

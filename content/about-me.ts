@@ -153,7 +153,7 @@ export const aboutMeTimeline: AboutTimelineEntry[] = [
     kind: "education",
     gpa: "3.88",
     logo: {
-      src: "/telkom-university.png",
+      src: "/telkom-university.webp",
       alt: "Telkom University logo",
       width: 40,
       height: 48,

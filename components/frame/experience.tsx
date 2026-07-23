@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { Lora, Manrope } from "next/font/google";
 import {
   Briefcase,
@@ -13,6 +12,7 @@ import {
   Zap,
   ArrowLeftRight,
 } from "lucide-react";
+import { LazyInViewImage } from "@/components/frame/lazy-in-view-image";
 import { experienceEntries } from "@/content/experience";
 import type { ExperienceEntry, ExperienceFeature } from "@/content/experience";
 import { useFrameInView } from "@/components/frame/use-frame-in-view";
@@ -168,13 +168,12 @@ function ExperienceCopyColumn({
     <FigmaLayer name="Copy" icon="frame" className={`flex ${copyCol} flex-col items-start gap-[13px]`}>
       <div className="flex w-full flex-col gap-3">
         {entry.logo ? (
-          <Image
+          <LazyInViewImage
             src={entry.logo.src}
             alt={entry.logo.alt}
             width={entry.logo.width ?? 48}
             height={entry.logo.height ?? 48}
             className={entry.logo.className ?? "size-12 object-contain"}
-            unoptimized
           />
         ) : null}
 

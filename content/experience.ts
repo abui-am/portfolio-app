@@ -67,7 +67,7 @@ export const experienceEntries: ExperienceEntry[] = [
     },
     links: [{ label: "Visit academy", href: "https://developeracademy.apps.binus.ac.id/bali/" }],
     logo: {
-      src: "/apple-developer-academy.png",
+      src: "/apple-developer-academy.webp",
       alt: "Apple Developer Academy @ BINUS logo",
       width: 155,
       height: 48,

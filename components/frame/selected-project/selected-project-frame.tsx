@@ -7,6 +7,7 @@ import type { SVGProps } from "react";
 import { ProjectScreenshotCarousel } from "@/components/frame/selected-project/project-screenshot-carousel";
 import { ProjectTechStack } from "@/components/frame/selected-project/project-tech-stack";
 import {
+  getCarouselStripHeight,
   getFrameHeight,
   SELECTED_PROJECT_LAYOUT,
 } from "@/components/frame/selected-project/layout";
@@ -39,6 +40,58 @@ function IconGithub(props: SVGProps<SVGSVGElement>) {
 
 function logoLayerName(src: string) {
   return src.split("/").pop() ?? "logo";
+}
+
+function isRasterImageSrc(src: string) {
+  return /\.(png|jpe?g|webp)$/i.test(src);
+}
+
+function ProjectLogo({
+  src,
+  alt,
+  width,
+  height,
+  className,
+  loadMedia,
+}: {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  className: string;
+  loadMedia: boolean;
+}) {
+  if (!loadMedia && isRasterImageSrc(src)) {
+    return <div className={className} aria-hidden style={{ width, height }} />;
+  }
+
+  return (
+    <Image
+      src={src}
+      alt={alt}
+      width={width}
+      height={height}
+      className={className}
+      loading={isRasterImageSrc(src) ? "lazy" : undefined}
+      unoptimized
+    />
+  );
+}
+
+function ProjectCarouselPlaceholder({
+  screenshots,
+  className,
+}: {
+  screenshots: SelectedProjectFrameProps["project"]["screenshots"];
+  className?: string;
+}) {
+  return (
+    <div
+      className={className}
+      style={{ height: getCarouselStripHeight(screenshots) }}
+      aria-hidden
+    />
+  );
 }
 
 function ProjectBadgeIcon({ icon, color }: { icon: SelectedProjectBadgeIcon; color: string }) {
@@ -243,20 +296,24 @@ export function SelectedProjectFrame({
               className="shrink-0 self-center lg:self-start"
             >
               <div className="frame-float">
-                <Image
+                <ProjectLogo
                   src={project.logo.src}
                   alt={project.logo.alt}
                   width={logoSize}
                   height={project.logo.height ?? logoSize}
                   className="size-40 object-contain sm:size-52 lg:size-[261px]"
-                  unoptimized
+                  loadMedia={inView}
                 />
               </div>
             </FigmaLayer>
           </FigmaLayer>
         </FigmaLayer>
 
-        <ProjectScreenshotCarousel screenshots={project.screenshots} ariaLabel={`${project.title} screenshots`} />
+        {inView ? (
+          <ProjectScreenshotCarousel screenshots={project.screenshots} ariaLabel={`${project.title} screenshots`} />
+        ) : (
+          <ProjectCarouselPlaceholder screenshots={project.screenshots} className="mt-8 w-full" />
+        )}
       </section>
     );
   }
@@ -406,24 +463,26 @@ export function SelectedProjectFrame({
             className="shrink-0"
           >
             <div className="frame-float">
-              <Image
+              <ProjectLogo
                 src={project.logo.src}
                 alt={project.logo.alt}
                 width={logoSize}
                 height={project.logo.height ?? logoSize}
                 className="size-[261px] object-contain"
-                unoptimized
+                loadMedia={inView}
               />
             </div>
           </FigmaLayer>
         </FigmaLayer>
       </FigmaLayer>
 
-      <ProjectScreenshotCarousel
-        screenshots={project.screenshots}
-        viewportWidth={carouselViewportWidth}
-        ariaLabel={`${project.title} screenshots`}
-      />
+      {inView ? (
+        <ProjectScreenshotCarousel
+          screenshots={project.screenshots}
+          viewportWidth={carouselViewportWidth}
+          ariaLabel={`${project.title} screenshots`}
+        />
+      ) : null}
     </section>
   );
 }

@@ -1,8 +1,8 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import Image from "next/image";
 import { Globe } from "lucide-react";
+import { LazyInViewImage } from "@/components/frame/lazy-in-view-image";
 import { aboutMeTimeline } from "@/content/about-me";
 import type { AboutTimelineEntry } from "@/content/about-me";
 
@@ -55,13 +55,12 @@ export function AboutMeTimeline() {
                   </p>
                 </div>
                 {entry.logo ? (
-                  <Image
+                  <LazyInViewImage
                     src={entry.logo.src}
                     alt={entry.logo.alt}
                     width={entry.logo.width ?? 32}
                     height={entry.logo.height ?? 32}
                     className={entry.logo.className ?? "size-8 object-contain"}
-                    unoptimized
                   />
                 ) : null}
               </div>

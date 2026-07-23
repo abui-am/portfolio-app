@@ -47,11 +47,11 @@ export const bliProject: SelectedProject = {
     alt: "Bli logo",
   },
   screenshots: [
-    { src: "/content/bli/image_1.png", width: 614, height: 379, alt: "Bli app screenshot 1" },
-    { src: "/content/bli/image_2.png", width: 614, height: 379, alt: "Bli app screenshot 2" },
-    { src: "/content/bli/image_3.png", width: 613, height: 379, alt: "Bli app screenshot 3" },
-    { src: "/content/bli/image_5.jpeg", width: 213, height: 379, alt: "Bli app screenshot 5" },
-    { src: "/content/bli/image_4.jpeg", width: 505, height: 379, alt: "Bli app screenshot 4" },
+    { src: "/content/bli/image_1.webp", width: 614, height: 379, alt: "Bli app screenshot 1" },
+    { src: "/content/bli/image_2.webp", width: 614, height: 379, alt: "Bli app screenshot 2" },
+    { src: "/content/bli/image_3.webp", width: 613, height: 379, alt: "Bli app screenshot 3" },
+    { src: "/content/bli/image_5.webp", width: 213, height: 379, alt: "Bli app screenshot 5" },
+    { src: "/content/bli/image_4.webp", width: 505, height: 379, alt: "Bli app screenshot 4" },
   ],
 };
 
@@ -85,13 +85,13 @@ export const kochaiProject: SelectedProject = {
     alt: "KochAI logo",
   },
   screenshots: [
-    { src: "/content/kochai/image_1.png", width: 614, height: 379, alt: "KochAI screenshot 1" },
-    { src: "/content/kochai/image_2.png", width: 614, height: 379, alt: "KochAI screenshot 2" },
-    { src: "/content/kochai/image_3.png", width: 614, height: 379, alt: "KochAI screenshot 3" },
-    { src: "/content/kochai/image_4.png", width: 614, height: 379, alt: "KochAI screenshot 4" },
-    { src: "/content/kochai/image_5.png", width: 614, height: 379, alt: "KochAI screenshot 5" },
-    { src: "/content/kochai/image_6.png", width: 614, height: 379, alt: "KochAI screenshot 6" },
-    { src: "/content/kochai/image_7.png", width: 614, height: 379, alt: "KochAI screenshot 7" },
+    { src: "/content/kochai/image_1.webp", width: 614, height: 379, alt: "KochAI screenshot 1" },
+    { src: "/content/kochai/image_2.webp", width: 614, height: 379, alt: "KochAI screenshot 2" },
+    { src: "/content/kochai/image_3.webp", width: 614, height: 379, alt: "KochAI screenshot 3" },
+    { src: "/content/kochai/image_4.webp", width: 614, height: 379, alt: "KochAI screenshot 4" },
+    { src: "/content/kochai/image_5.webp", width: 614, height: 379, alt: "KochAI screenshot 5" },
+    { src: "/content/kochai/image_6.webp", width: 614, height: 379, alt: "KochAI screenshot 6" },
+    { src: "/content/kochai/image_7.webp", width: 614, height: 379, alt: "KochAI screenshot 7" },
   ],
 };
 
@@ -117,26 +117,26 @@ export const gitgudProject: SelectedProject = {
   ],
   githubUrl: "https://github.com/abui-am/gitgud",
   logo: {
-    src: "/content/gitgud/logo.png",
+    src: "/content/gitgud/logo.webp",
     alt: "GitGud logo",
     width: 261,
     height: 99,
   },
   screenshots: [
     {
-      src: "/content/gitgud/image_1.png",
+      src: "/content/gitgud/image_1.webp",
       width: 614,
       height: 356,
       alt: "GitGud screenshot 1",
     },
     {
-      src: "/content/gitgud/image_2.png",
+      src: "/content/gitgud/image_2.webp",
       width: 614,
       height: 342,
       alt: "GitGud screenshot 2",
     },
     {
-      src: "/content/gitgud/image_3.png",
+      src: "/content/gitgud/image_3.webp",
       width: 614,
       height: 356,
       alt: "GitGud screenshot 3",
