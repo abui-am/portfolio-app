@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { FileDown, Play, Search, X } from "lucide-react";
+import { CANVAS_FLOAT_BOTTOM_CLASS } from "@/components/figma-shell/canvas-float-chrome";
 
 const STORAGE_KEY = "portfolio-figma-quick-actions-onboarding-dismissed";
 const figmaBlue = "#18a0fb";
@@ -37,16 +38,16 @@ function PreviewMock() {
     >
       <div className="m-3 overflow-hidden rounded-md border border-[#e6e6e6] bg-white shadow-sm">
         <div className="flex items-center gap-2 border-b border-[#e6e6e6] px-2.5 py-2">
-          <Search className="size-3.5 shrink-0 text-[#7a7a7a]" aria-hidden />
-          <span className="text-[11px] text-[#b3b3b3]">Type a command or search...</span>
+          <Search className="size-4 shrink-0 text-[#7a7a7a]" aria-hidden />
+          <span className="text-[13px] text-[#b3b3b3]">Type a command or search...</span>
         </div>
         <ul className="py-1">
-          <li className="flex items-center gap-2 bg-[#e8f3ff] px-2.5 py-1.5 text-[11px] text-[#18a0fb]">
-            <FileDown className="size-3 shrink-0" aria-hidden />
+          <li className="flex items-center gap-2.5 bg-[#e8f3ff] px-3 py-2 text-[13px] text-[#18a0fb]">
+            <FileDown className="size-4 shrink-0" aria-hidden />
             Download portfolio
           </li>
-          <li className="flex items-center gap-2 px-2.5 py-1.5 text-[11px] text-[#333]">
-            <Play className="size-3 shrink-0 text-[#7a7a7a]" aria-hidden />
+          <li className="flex items-center gap-2.5 px-3 py-2 text-[13px] text-[#333]">
+            <Play className="size-4 shrink-0 text-[#7a7a7a]" aria-hidden />
             Go to play mode
           </li>
         </ul>
@@ -73,7 +74,7 @@ export function FigmaQuickActionsOnboarding({ hidden = false }: FigmaQuickAction
 
   return (
     <div
-      className="pointer-events-none absolute inset-x-3 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-30 flex justify-end sm:inset-x-auto sm:right-5 sm:bottom-[calc(6rem+env(safe-area-inset-bottom))]"
+      className={`pointer-events-none absolute inset-x-3 ${CANVAS_FLOAT_BOTTOM_CLASS} z-30 flex justify-end sm:inset-x-auto sm:right-5`}
       data-canvas-interactive
     >
       <div

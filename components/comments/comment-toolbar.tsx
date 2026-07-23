@@ -1,6 +1,7 @@
 "use client";
 
 import { MessageCircle } from "lucide-react";
+import { CANVAS_FLOAT_BOTTOM_CLASS } from "@/components/figma-shell/canvas-float-chrome";
 import { useCommentMode } from "@/components/comments/comment-mode-context";
 
 interface CommentToolbarProps {
@@ -14,7 +15,7 @@ export function CommentToolbar({ hidden = false }: CommentToolbarProps) {
 
   return (
     <div
-      className="pointer-events-none absolute inset-x-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-40 flex justify-center px-3 sm:bottom-[calc(3rem+env(safe-area-inset-bottom))] sm:px-0"
+      className={`pointer-events-none absolute inset-x-0 ${CANVAS_FLOAT_BOTTOM_CLASS} z-40 flex justify-center px-3 sm:px-0`}
       data-canvas-interactive
     >
       <div className="pointer-events-auto rounded-full bg-white/95 py-1.5 pr-3 pl-2 shadow-[0_2px_12px_rgba(0,0,0,0.12)] backdrop-blur-sm">
