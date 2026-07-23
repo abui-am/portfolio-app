@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { FileDown, Play, Search, X } from "lucide-react";
-import { deferUntilIdle } from "@/lib/defer-until-idle";
 
 const STORAGE_KEY = "portfolio-figma-quick-actions-onboarding-dismissed";
 const figmaBlue = "#18a0fb";
@@ -62,30 +61,7 @@ export function FigmaQuickActionsOnboarding({ hidden = false }: FigmaQuickAction
 
   useEffect(() => {
     setModKey(/Mac|iPhone|iPad/i.test(navigator.platform) ? "⌘" : "Ctrl");
-    if (readDismissed()) return;
-
-    function scheduleShow() {
-      return deferUntilIdle(() => {
-        if (!readDismissed()) setIsVisible(true);
-      }, 6000);
-    }
-
-    let cleanup: (() => void) | undefined;
-
-    if (document.readyState === "complete") {
-      cleanup = scheduleShow();
-      return () => cleanup?.();
-    }
-
-    function onLoad() {
-      cleanup = scheduleShow();
-    }
-
-    window.addEventListener("load", onLoad, { once: true });
-    return () => {
-      window.removeEventListener("load", onLoad);
-      cleanup?.();
-    };
+    if (!readDismissed()) setIsVisible(true);
   }, []);
 
   function dismiss() {

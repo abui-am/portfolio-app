@@ -24,13 +24,11 @@ const actionLinkClassName =
 const manrope = Manrope({
   subsets: ["latin"],
   variable: "--font-portfolio-sans",
-  display: "swap",
 });
 
 const lora = Lora({
   subsets: ["latin"],
   variable: "--font-portfolio-serif",
-  display: "swap",
 });
 
 const accent = "#7c4dff";
@@ -103,7 +101,7 @@ function EmployerCard({ employer }: { employer: PortfolioEmployer }) {
   );
 }
 
-function ProfilePhotoFlip({ eagerLoadPhoto = false }: { eagerLoadPhoto?: boolean }) {
+function ProfilePhotoFlip() {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
@@ -172,8 +170,7 @@ function ProfilePhotoFlip({ eagerLoadPhoto = false }: { eagerLoadPhoto?: boolean
               width={266}
               height={266}
               className="size-full object-cover"
-              priority={eagerLoadPhoto}
-              loading={eagerLoadPhoto ? undefined : "lazy"}
+              priority
             />
           </div>
           <div className="profile-flip-face profile-flip-face--back">
@@ -193,7 +190,7 @@ function ProfilePhotoFlip({ eagerLoadPhoto = false }: { eagerLoadPhoto?: boolean
 }
 
 export default function Portfolio() {
-  const { ref, inView } = useFrameInView(0.15, { eager: true });
+  const { ref, inView } = useFrameInView(0.15);
   const isSite = useIsSiteView();
 
   return (
@@ -334,7 +331,7 @@ export default function Portfolio() {
                 : "relative isolate size-[266px] shrink-0 overflow-visible rounded-2xl"
             }
           >
-            <ProfilePhotoFlip eagerLoadPhoto={isSite} />
+            <ProfilePhotoFlip />
           </FigmaLayer>
 
           <PortfolioTerminal />

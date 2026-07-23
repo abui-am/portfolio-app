@@ -104,7 +104,7 @@ html {
   overflow-x: clip;
 }
 
-.portfolio-site .site-section-content > section {
+.portfolio-site .site-section-content>section {
   width: 100%;
   max-width: 100%;
   min-width: 0;
@@ -148,6 +148,7 @@ html {
 }
 
 @keyframes frame-pulse-dot {
+
   0%,
   100% {
     transform: scale(1);
@@ -161,6 +162,7 @@ html {
 }
 
 @keyframes frame-float {
+
   0%,
   100% {
     transform: translateY(0);
@@ -172,6 +174,7 @@ html {
 }
 
 @keyframes frame-arrow-nudge {
+
   0%,
   100% {
     transform: translateX(0);
@@ -274,20 +277,8 @@ html {
   }
 }
 
-/* Mobile: hero copy should paint immediately after hydration (LCP). */
-@media (max-width: 1023px) and (prefers-reduced-motion: no-preference) {
-  .frame-animated [data-frame-reveal="badge"],
-  .frame-animated [data-frame-reveal="title"],
-  .frame-animated [data-frame-reveal="description"],
-  .frame-animated [data-frame-reveal="role"],
-  .frame-animated [data-frame-reveal="tech"] {
-    opacity: 1;
-    transform: none;
-    animation: none;
-  }
-}
-
 @keyframes profile-flip-squish {
+
   0%,
   100% {
     transform: scale(1);
@@ -403,6 +394,7 @@ html {
 }
 
 @keyframes about-os-border-shift {
+
   0%,
   100% {
     background-position: 0% 50%;
@@ -414,6 +406,7 @@ html {
 }
 
 @keyframes about-os-status-pulse {
+
   0%,
   100% {
     transform: scale(1);
@@ -427,6 +420,7 @@ html {
 }
 
 @keyframes about-os-pill-glow {
+
   0%,
   100% {
     box-shadow: 0 0 0 rgba(124, 77, 255, 0);
@@ -559,9 +553,11 @@ html {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+
   html {
     @apply font-sans;
   }
