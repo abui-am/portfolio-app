@@ -1,8 +1,8 @@
 # Abuidillah Adjie Muliadi
 
-> Abuidillah Adjie Muliadi — software engineer in Bali, Indonesia. React, Next.js, and TypeScript portfolio with projects and experience.
+> Fullstack engineer in Bali specializing in Next.js and TypeScript web development. Selected projects, tech stack, professional work, and get in touch.
 
-Abuidillah Adjie Muliadi (Abui Muliadi, Abuidillah A. Muliadi) is a Software Engineer based in Bali, Indonesia. Primary stack: React, Next.js, TypeScript.
+Abuidillah Adjie Muliadi (Abui Muliadi, Abuidillah A. Muliadi) is a Fullstack Engineer based in Bali, Indonesia. Primary stack: React, Next.js, TypeScript.
 
 ## Canonical pages
 

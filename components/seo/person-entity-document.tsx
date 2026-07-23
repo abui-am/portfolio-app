@@ -11,7 +11,7 @@ const coreSkills = [
   "Next.js",
   "TypeScript",
   "Tailwind CSS",
-  "Frontend Engineering",
+  "Fullstack Engineering",
   "Web Development",
   "Vue.js",
   "Node.js",
@@ -44,7 +44,7 @@ export function PersonEntityDocument() {
       </header>
 
       <section id="entity-skills" aria-labelledby="entity-skills-heading">
-        <h2 id="entity-skills-heading">Tech stack — Next.js, TypeScript &amp; frontend development</h2>
+        <h2 id="entity-skills-heading">Tech stack — Next.js, TypeScript &amp; fullstack development</h2>
         <ul>
           {coreSkills.map((skill) => (
             <li key={skill}>{skill}</li>
@@ -81,7 +81,7 @@ export function PersonEntityDocument() {
       </section>
 
       <section id="entity-experience" aria-labelledby="entity-experience-heading">
-        <h2 id="entity-experience-heading">Frontend engineer &amp; product engineer experience</h2>
+        <h2 id="entity-experience-heading">Fullstack engineer &amp; product engineer experience</h2>
         <ul>
           {experienceEntries.map((entry) => (
             <li key={`${entry.company}-${entry.period}`}>

@@ -2,11 +2,19 @@
 
 import { useEffect, useRef, useState } from "react";
 
-export function useFrameInView(threshold = 0.15) {
+interface UseFrameInViewOptions {
+  /** Skip IntersectionObserver — use for above-the-fold hero frames. */
+  eager?: boolean;
+}
+
+export function useFrameInView(threshold = 0.15, options: UseFrameInViewOptions = {}) {
+  const { eager = false } = options;
   const ref = useRef<HTMLElement>(null);
-  const [inView, setInView] = useState(false);
+  const [inView, setInView] = useState(eager);
 
   useEffect(() => {
+    if (eager) return;
+
     let observer: IntersectionObserver | null = null;
     let cancelled = false;
 
@@ -38,7 +46,7 @@ export function useFrameInView(threshold = 0.15) {
       cancelAnimationFrame(raf);
       observer?.disconnect();
     };
-  }, [threshold]);
+  }, [eager, threshold]);
 
   return { ref, inView };
 }

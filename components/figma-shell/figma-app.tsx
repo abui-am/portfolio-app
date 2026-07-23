@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import {
@@ -35,8 +36,15 @@ import { FigmaMobileQuickActionsFab } from "@/components/figma-shell/figma-mobil
 import { CommentModeProvider, useCommentMode } from "@/components/comments/comment-mode-context";
 import { CommentSidebar } from "@/components/comments/comment-sidebar";
 import { CommentToolbar } from "@/components/comments/comment-toolbar";
-import { FigmaQuickActionsOnboarding } from "@/components/figma-shell/figma-quick-actions-onboarding";
 import { MOBILE_MEDIA_QUERY } from "@/components/figma-shell/use-is-mobile";
+
+const FigmaQuickActionsOnboarding = dynamic(
+  () =>
+    import("@/components/figma-shell/figma-quick-actions-onboarding").then(
+      (mod) => mod.FigmaQuickActionsOnboarding,
+    ),
+  { ssr: false },
+);
 
 /** Mobile top bar content height + safe-area for 44pt touch targets; desktop stays 40px via `lg:h-10`. */
 const TOP_BAR_MOBILE_PX = 52;
@@ -578,6 +586,10 @@ function FigmaAppShellContent({
     syncMobileChrome();
     mediaQuery.addEventListener("change", syncMobileChrome);
     return () => mediaQuery.removeEventListener("change", syncMobileChrome);
+  }, []);
+
+  useEffect(() => {
+    document.getElementById("mobile-lcp-fallback")?.remove();
   }, []);
 
   const toggleChrome = useCallback(() => {

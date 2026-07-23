@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { FileDown } from "lucide-react";
-import { Lora, Manrope } from "next/font/google";
 import type { MouseEvent, TransitionEvent } from "react";
 import { useState } from "react";
 
@@ -20,16 +19,6 @@ import { CV_DOWNLOAD_NAME, CV_PDF_HREF } from "@/content/cv-download";
 
 const actionLinkClassName =
   "w-fit gap-2 transition-transform duration-200 hover:scale-[1.03] active:scale-[0.98]";
-
-const manrope = Manrope({
-  subsets: ["latin"],
-  variable: "--font-portfolio-sans",
-});
-
-const lora = Lora({
-  subsets: ["latin"],
-  variable: "--font-portfolio-serif",
-});
 
 const accent = "#7c4dff";
 const accentMuted = "rgba(97, 86, 245, 0.1)";
@@ -190,13 +179,13 @@ function ProfilePhotoFlip() {
 }
 
 export default function Portfolio() {
-  const { ref, inView } = useFrameInView(0.15);
+  const { ref, inView } = useFrameInView(0.15, { eager: true });
   const isSite = useIsSiteView();
 
   return (
     <section
       ref={ref}
-      className={`frame-animated ${inView ? "frame-in-view" : ""} ${manrope.variable} ${lora.variable} box-border flex min-h-0 ${isSite
+      className={`frame-animated ${inView ? "frame-in-view" : ""} box-border flex min-h-0 ${isSite
         ? "w-full flex-col gap-8 bg-transparent px-0 py-0 lg:min-h-[480px] lg:flex-row lg:items-start lg:justify-center lg:gap-x-[124px]"
         : "min-h-[480px] w-[1440px] flex-row items-start justify-center gap-x-[124px] bg-[#F8F8F8] px-[128px] py-10"
         }`}
@@ -250,14 +239,14 @@ export default function Portfolio() {
         </FigmaLayer>
 
         <FigmaLayer
-          name="Experienced Software Engineer..."
+          name="Experienced Fullstack Engineer..."
           icon="text"
           as="p"
           data-frame-reveal="description"
           className="max-w-[472px] text-[15px] leading-relaxed text-black/60"
         >
           <b>
-            Experienced Software Engineer</b> based in <b>
+            Experienced Fullstack Engineer</b> based in <b>
             <a
               href={portfolioLocationMapsHref}
               target="_blank"
@@ -279,7 +268,7 @@ export default function Portfolio() {
           data-frame-reveal="tech"
           className="max-w-[472px] text-[15px] leading-relaxed text-black/60"
         >
-          Expert in <b>Frontend Development</b>, and have a strong foundation in <b>UI/UX Design</b> and <b>Backend Development</b>. I’ll build what you envision.
+          Expert in <b>Fullstack Development</b>, with a strong foundation in <b>UI/UX Design</b> and <b>Backend Development</b>. I’ll build what you envision.
         </FigmaLayer>
 
         <FigmaLayer

@@ -58,7 +58,7 @@ export function JsonLdPerson() {
             "React",
             "Next.js",
             "TypeScript",
-            "Frontend Engineering",
+            "Fullstack Engineering",
             "Web Development",
           ],
         },
@@ -66,7 +66,7 @@ export function JsonLdPerson() {
           "React",
           "Next.js",
           "TypeScript",
-          "Frontend Engineering",
+          "Fullstack Engineering",
           "Web Development",
         ],
         homeLocation: {

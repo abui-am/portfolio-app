@@ -48,7 +48,7 @@ export const aboutMeStory = {
 
 export const aboutMeOs = {
   edition: "Engineer's Profile v1.0",
-  role: "Frontend Engineer",
+  role: "Fullstack Engineer",
   experience: "5+ years",
   stack: "React · TypeScript",
   interest: ["Web Development", "AI", "Product Development", "User Experience", "User Research"] as const,

@@ -6,7 +6,7 @@ export const personSeo = {
   givenName: "Abuidillah Adjie",
   familyName: "Muliadi",
   alternateNames: ["Abui Muliadi", "Abuidillah A. Muliadi"] as const,
-  jobTitle: "Frontend Engineer",
+  jobTitle: "Fullstack Engineer",
   location: {
     area: "Bali",
     region: "Indonesia",
@@ -22,26 +22,26 @@ export const personSeo = {
 } as const;
 
 export const personSeoDescription =
-  "Frontend engineer in Bali specializing in Next.js and TypeScript web development. Selected projects, tech stack, professional work, and get in touch.";
+  "Fullstack engineer in Bali specializing in Next.js and TypeScript web development. Selected projects, tech stack, professional work, and get in touch.";
 
 export const personSeoHomeDescription =
-  "Next.js and TypeScript frontend development portfolio in Bali. Selected project work, tech stack, and ways to get in touch with Abuidillah Adjie Muliadi.";
+  "Next.js and TypeScript fullstack development portfolio in Bali. Selected project work, tech stack, and ways to get in touch with Abuidillah Adjie Muliadi.";
 
 export const personSeoPlayDescription =
-  "Selected projects and frontend engineer experience — Next.js, TypeScript, and web development work in Bali. Tech stack, professional experience, get in touch.";
+  "Selected projects and fullstack engineer experience — Next.js, TypeScript, and web development work in Bali. Tech stack, professional experience, get in touch.";
 
-export const personSeoTitle = `${personSeo.name} | Frontend Engineer — Next.js & TypeScript`;
+export const personSeoTitle = `${personSeo.name} | Fullstack Engineer — Next.js & TypeScript`;
 
-export const personSeoPlayTitle = `${personSeo.name} | Selected Projects — Next.js Frontend Engineer`;
+export const personSeoPlayTitle = `${personSeo.name} | Selected Projects — Next.js Fullstack Engineer`;
 
 export const personSeoKeywords = [
   personSeo.name,
-  "Abuidillah Adjie Muliadi software engineer",
+  "Abuidillah Adjie Muliadi fullstack engineer",
   "Abuidillah Adjie Muliadi portfolio",
   "Abui Muliadi",
-  "frontend engineer Bali",
+  "fullstack engineer Bali",
   "Next.js TypeScript developer",
-  "Next.js frontend engineer",
+  "Next.js fullstack engineer",
   "TypeScript web development",
   "selected projects portfolio",
   "tech stack Next.js",
