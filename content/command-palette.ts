@@ -52,7 +52,14 @@ export const commandPaletteItems: CommandPaletteItem[] = [
   ...getInTouchLinks.map((link) => ({
     id: `contact-${link.id}`,
     label: `Contact me via ${link.label}`,
-    keywords: ["contact", "reach", "get in touch", link.id, link.label.toLowerCase(), link.display],
+    keywords: [
+      "contact",
+      "reach",
+      "get in touch",
+      link.id,
+      link.label.toLowerCase(),
+      ...(link.id === "email" ? [] : [link.display]),
+    ],
     action: { type: "open-url" as const, url: link.href },
   })),
 ];

@@ -55,7 +55,7 @@ function TechIconTile(props: TechIconTileProps) {
         aria-label={label}
         className="flex size-[54px] shrink-0 cursor-default items-center justify-center rounded-2xl border-0 bg-white p-0 transition-transform duration-200 hover:scale-105"
       >
-        <Image src={src} alt="" width={32} height={32} className="size-8 object-contain" aria-hidden unoptimized />
+        <Image src={src} alt={label} width={32} height={32} className="size-8 object-contain" unoptimized />
       </TooltipTrigger>
       <TooltipContent side="top">{label}</TooltipContent>
     </Tooltip>

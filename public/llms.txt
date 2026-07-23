@@ -1,0 +1,37 @@
+# Abuidillah Adjie Muliadi
+
+> Abuidillah Adjie Muliadi — software engineer in Bali, Indonesia. React, Next.js, and TypeScript portfolio with projects and experience.
+
+Abuidillah Adjie Muliadi (Abui Muliadi, Abuidillah A. Muliadi) is a Software Engineer based in Bali, Indonesia. Primary stack: React, Next.js, TypeScript.
+
+## Canonical pages
+
+- [Home — interactive Figma-style portfolio editor](/)
+- [Portfolio — projects, experience, contact](/play)
+
+## Selected projects
+
+- **Bli, Your Bali Local Friend** (Product + Engineer) — Bli is an AI-powered local assistant designed to help residents and travelers discover real-time events, attractions, and activities across Bali. Coded in just 3 hours, Bli successfully win Build with AI: TRAE Friends@Bali Hackathon.
+  Demo: https://bli-iota.vercel.app/ · GitHub: https://github.com/abui-am/bli
+- **KochAI** (Engineer) — KochAI is my bachelor thesis project — a fitness chatbot built to help users get clear, science-based answers to their health and training questions. It combines Retrieval-Augmented Generation (RAG) with Supervised Fine-Tuning, allowing it to pull insights from real scientific papers while also responding in a natural, easy-to-understand way.
+  Demo: https://kochai.abui-lab.xyz/ · GitHub: https://github.com/abui-am/kochai-fe
+- **GitGud** (Engineer) — GitGud is an AI wrapper designed in Go that enhances the Git experience with AI-assisted commit message generation. It seamlessly wraps standard Git commands while introducing intelligent features to streamline your workflow.
+  GitHub: https://github.com/abui-am/gitgud
+
+## Professional experience
+
+- **Product Engineer** at Apple Developer Academy @ BINUS, Bali (Mar 2026 - Present) — I joined the academy to relearn how I build apps. Most of my career has been web front-ends; this is a deliberate turn toward iOS—Swift, design, and talking to users before writing code. Ten-month scholarship at Park23 with Apple and BINUS, working in small teams on challenge briefs that end in real apps.
+- **Frontend Engineer II** at Evermos (Jul 2025 - Mar 2026) — Built and maintained front-end systems for Everpro, Evermos' logistics platform serving 30,000+ sellers with multi-carrier shipping, COD disbursement, and API integrations.
+- **Senior Frontend Engineer** at Dealls Jobs (YC W22) (Dec 2022 - Jul 2025) — Led front-end development for Dealls' job portal and KantorKu's all-in-one HRIS—platforms used by thousands of companies across Indonesia.
+
+## Profiles & contact
+
+- https://github.com/abui-am
+- https://www.linkedin.com/in/abuidillah-adjie-muliadi-bb0816190/
+- https://cal.com/abui-muliadi
+
+## Optional
+
+- [Sitemap](/sitemap.xml)
+- [Robots](/robots.txt)
+- [CV (PDF)](/Abuidillah%20Adjie%20Muliadi_CV_Updated.pdf)

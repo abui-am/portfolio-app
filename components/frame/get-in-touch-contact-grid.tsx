@@ -95,19 +95,21 @@ function CompactContactTile({ tile }: { tile: GetInTouchGridTile }) {
   if (tile.id === "email") {
     return (
       <FigmaLayer name={tile.label} icon="component" className="min-w-0">
-        <a href={tile.href} className={compactTileClassName} title={tile.display}>
+        <a href={tile.href} className={compactTileClassName} title="Send an email">
           {content}
         </a>
       </FigmaLayer>
     );
   }
 
+  const rel = tile.external ? "me noopener noreferrer" : undefined;
+
   return (
     <FigmaLayer name={tile.label} icon="component" className="min-w-0">
       <a
         href={tile.href}
         target="_blank"
-        rel="noopener noreferrer"
+        rel={rel}
         className={compactTileClassName}
         title={tile.display}
       >

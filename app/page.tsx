@@ -1,10 +1,19 @@
+import type { Metadata } from "next";
 import { FigmaApp } from "@/components/figma-shell/figma-app";
-import { PersonSummary } from "@/components/seo/person-summary";
+import { PersonEntityDocument } from "@/components/seo/person-entity-document";
+import { personSeoHomeDescription, personSeoTitle } from "@/content/person-seo";
+import { createSiteMetadata } from "@/lib/seo/metadata";
+
+export const metadata: Metadata = createSiteMetadata({
+  path: "/",
+  title: personSeoTitle,
+  description: personSeoHomeDescription,
+});
 
 export default function Home() {
   return (
     <>
-      <PersonSummary visuallyHidden />
+      <PersonEntityDocument />
       <FigmaApp />
     </>
   );

@@ -41,6 +41,9 @@ export function createSiteMetadata(options: CreateSiteMetadataOptions = {}): Met
     category: "technology",
     alternates: {
       canonical,
+      types: {
+        "text/plain": "/llms.txt",
+      },
     },
     robots: {
       index: true,

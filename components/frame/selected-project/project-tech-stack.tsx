@@ -26,12 +26,11 @@ export function ProjectTechStack({ items }: ProjectTechStackProps) {
             {index > 0 ? <span aria-hidden>,</span> : null}
             <Image
               src={item.iconSrc}
-              alt=""
+              alt={item.label}
               width={16}
               height={16}
               className="size-4 shrink-0 object-contain"
               unoptimized
-              aria-hidden
             />
             <span>{item.label}</span>
           </span>

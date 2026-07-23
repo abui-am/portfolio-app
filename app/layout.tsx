@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { JsonLdPerson } from "@/components/seo/json-ld-person";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { createSiteMetadata } from "@/lib/seo/metadata";
@@ -39,10 +40,15 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} h-full antialiased`}
     >
+      <head>
+        <link rel="llms-txt" href="/llms.txt" type="text/plain" />
+        <link rel="alternate" type="text/plain" href="/llms.txt" title="LLMs.txt" />
+      </head>
       <body className={`min-h-full flex flex-col font-sans ${inter.className}`}>
         <JsonLdPerson />
         <TooltipProvider>{children}</TooltipProvider>
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

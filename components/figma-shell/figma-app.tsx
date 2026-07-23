@@ -42,7 +42,7 @@ import { MOBILE_MEDIA_QUERY } from "@/components/figma-shell/use-is-mobile";
 const TOP_BAR_MOBILE_PX = 52;
 
 function FigmaMark({ className }: { className?: string }) {
-  return <img src="/figma-mark.ico" alt="" className={className} aria-hidden />;
+  return <img src="/figma-mark.ico" alt="Figma" className={className} />;
 }
 
 const border = "border-[#e6e6e6]";

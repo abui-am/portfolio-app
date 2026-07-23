@@ -15,13 +15,20 @@ export const personSeo = {
   email: "adjiem31@gmail.com",
   profileImagePath: "/profile.png",
   cvPath: CV_PDF_HREF,
-  sameAs: getInTouchLinks
-    .filter((link) => link.href.startsWith("http"))
-    .map((link) => link.href),
+  sameAs: [
+    ...getInTouchLinks.filter((link) => link.href.startsWith("http")).map((link) => link.href),
+    "https://cal.com/abui-muliadi",
+  ],
 } as const;
 
 export const personSeoDescription =
-  "Abuidillah Adjie Muliadi is a software engineer based in Bali, Indonesia, building scalable web products with React, Next.js, and TypeScript. Explore selected projects, professional experience, and ways to contact Abuidillah Adjie Muliadi.";
+  "Abuidillah Adjie Muliadi — software engineer in Bali, Indonesia. React, Next.js, and TypeScript portfolio with projects and experience.";
+
+export const personSeoHomeDescription =
+  "Interactive Figma-style portfolio by Abuidillah Adjie Muliadi, a React and Next.js software engineer based in Bali, Indonesia.";
+
+export const personSeoPlayDescription =
+  "Selected projects, professional experience, and contact for Abuidillah Adjie Muliadi — React and Next.js software engineer in Bali.";
 
 export const personSeoTitle = `${personSeo.name} | Software Engineer Portfolio`;
 
@@ -31,6 +38,9 @@ export const personSeoKeywords = [
   "Abuidillah Adjie Muliadi portfolio",
   "Abui Muliadi",
   "software engineer Bali",
-  "React developer Indonesia",
-  "Next.js developer",
+  "software engineer Indonesia",
+  "React developer Bali",
+  "Next.js developer Indonesia",
+  "TypeScript developer",
+  "frontend engineer portfolio",
 ] as const;
